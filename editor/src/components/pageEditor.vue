@@ -1,0 +1,414 @@
+<template>
+  <q-layout view="hHr LpR lfr">
+
+    <q-header elevated class="bg-dark text-white" height-hint="98">
+      <q-toolbar class="shadow-6">
+        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
+
+        <q-toolbar-title>
+          <q-select ref="qSelect"
+            dark filled standout
+            style="max-width: 300px; height: 50px;"
+            v-model="page.name"
+            :options="pages" use-input hide-selected fill-input
+            :loading="loading" @filter="(val, update, abort) => update(() => {})" @input-value="getPages"
+            @popup-show="getPages"
+            @update:model-value="async (val) => {
+              await getPage(val)
+              $refs.qSelect.blur()
+              $updateURL('/page-editor/' + val)
+              getPages()
+            }">
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  No results
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+        </q-toolbar-title>
+
+        <!-- <q-btn dense flat round icon="menu" @click="toggleRightDrawer" /> -->
+        <q-btn :disabled="!hasChanges" dense icon="save" label="save" @click="save" />
+      </q-toolbar>
+      <div class="row">
+        <q-input v-model="page.path" readonly dense dark label="path" class="q-ma-sm" />
+        <q-space />
+        <q-tabs align="right" dense v-model="env">
+          <q-tab name="" label="prod" />
+          <q-tab name="/staging-env" label="staging" />
+          <q-tab name="/dev-env" label="dev" />
+        </q-tabs>
+      </div>
+    </q-header>
+
+    <q-drawer v-model="leftDrawerOpen" side="left" bordered>
+      <!-- drawer content -->
+    </q-drawer>
+
+    <q-drawer show-if-above v-model="rightDrawerOpen" side="right" class="column col">
+      <div class="absolute-top" style="height: 50px;">
+        <q-toolbar class="bg-dark text-white col">
+          <q-input dark dense standout
+          v-model="searchText"
+          @update:model-value="getComponents"
+          class="col" input-class="text-right">
+            <template v-slot:append>
+              <q-icon v-if="searchText === ''" name="search" />
+              <q-icon v-else name="clear" class="cursor-pointer" @click="searchText = ''" />
+            </template>
+          </q-input>
+        </q-toolbar>
+      </div>
+      <q-scroll-area class="inset-shadow" style="height: calc(100% - 50px); margin-top: 50px;">
+        <div class="q-pa-md">
+          <draggable
+            class="dragArea list-group q-gutter-md"
+            ghost-class="ghost"
+            :clone="clone"
+            :list="this.components"
+            :group="{ name: 'pageComponents', pull: 'clone', put: false }"
+            item-key="name"
+            @start="dragging = true" @end="dragging = false"
+          >
+            <template #item="{ element }">
+              <div class="list-group-item">
+                <!-- {{ element.name }} -->
+                <!-- <likha-iframe :env="env" :component="element" :dragging="dragging" /> -->
+                <q-card>
+                  <div style="height: 150px">
+                    <!-- <iframe
+                      class="shadow-transition fit"
+                      :src="$previewHost + env + '/lk-preview/' + element.name" frameborder="0">
+                    </iframe > -->
+                    <iframe
+                      class="shadow-transition fit"
+                      :srcdoc='`
+                        <iframe src="${$previewHost + env + "/lk-preview/" + element.name}" frameborder="0"
+                          style="
+                            -ms-transform: scale(0.80);
+                            -moz-transform: scale(0.80);
+                            -o-transform: scale(0.80);
+                            -webkit-transform: scale(0.80);
+                            transform: scale(0.80);
+
+                            -ms-transform-origin: 0 0;
+                            -moz-transform-origin: 0 0;
+                            -o-transform-origin: 0 0;
+                            -webkit-transform-origin: 0 0;
+                            transform-origin: 0 0;
+                          "
+                          onload="function fnName () { ${code} }; fnName()"
+                        ></iframe>
+                      `'>
+                    </iframe>
+                    <div
+                      style="background-color: rgba(0, 0, 0, 0.47);"
+                      class="handle absolute-bottom text-subtitle2 text-center q-pa-md"
+                    >
+                      {{ element.name }}
+                    </div>
+                  </div>
+                </q-card>
+              </div>
+            </template>
+          </draggable>
+        </div>
+      </q-scroll-area>
+    </q-drawer>
+
+    <q-page-container>
+      <div class="column">
+        <!-- <likha-iframe v-for="comp in page.components" :key="comp.name" :component="comp" /> -->
+        <draggable
+          class="dragArea list-group"
+          :class="{
+            'q-gutter-md q-pa-md': dragging
+          }"
+          ghost-class="ghost"
+          handle=".handle"
+          v-model="page.components"
+          item-key="name"
+          :group="{ name: 'pageComponents', pull: true, put: true }"
+          @start="dragging = true" @end="dragging = false" :move="checkMove"
+          @change="changedComponents">
+          <template #item="{ element, index }">
+            <div class="handle list-group-item">
+              <!-- {{ element.name }} -->
+              <likha-iframe :env="env" :component="element" :dragging="dragging" @remove="removeComponent(element.name, index)" />
+            </div>
+          </template>
+        </draggable>
+      </div>
+    </q-page-container>
+
+    <!-- <q-footer elevated class="bg-grey-8 text-white">
+      <q-toolbar>
+        <q-toolbar-title>
+          <q-avatar>
+            <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg">
+          </q-avatar>
+          <div>Title</div>
+        </q-toolbar-title>
+      </q-toolbar>
+    </q-footer> -->
+
+  </q-layout>
+</template>
+
+<script>
+/* eslint-disable no-new-func */
+/* eslint-disable vue/no-parsing-error */
+import { ref } from 'vue'
+
+export default {
+  unmounted () {
+  },
+  async beforeMount () {
+    const { name } = this.$route.params
+    this.getComponents()
+    this.getPages()
+    await this.getPage(name)
+  },
+  computed: {
+    hasChanges () {
+      console.log('orig', this.page.origComponents)
+      const changes = JSON.stringify(this.page.components)
+      console.log('change []', this.page.origComponents)
+      return this.page.origComponents !== changes
+    }
+  },
+  methods: {
+    removeComponent (name, index) {
+      this.$q.dialog({
+        title: 'Remove Component',
+        message: `Would you like remove <${name} /> ?`,
+        focus: 'none',
+        cancel: true,
+        persistent: true
+      }).onOk(() => {
+        this.page.components.splice(index, 1)
+        this.page.components = this.page.components.map((c, i) => ({ ...c, order: i }))
+      }).onOk(() => {
+        // console.log('>>>> second OK catcher')
+      }).onCancel(() => {
+        // console.log('>>>> Cancel')
+      }).onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      })
+    },
+    async clone (c) {
+      console.log('clone', c)
+      this.clonedComponent = {
+        name: c.name,
+        props: {}
+      }
+    },
+    async getPages (name) {
+      console.log('getting pages 1', name)
+      this.loading = true
+      const filters = {}
+      if (name) {
+        filters.$or = [
+          {
+            name: { $containsi: name }
+          },
+          {
+            path: { $containsi: name }
+          },
+          {
+            components: { $containsi: name }
+          }
+        ]
+      }
+      const query = this.$qs.stringify({
+        filters,
+        sort: ['name:desc'],
+        pagination: {
+          start: 0,
+          limit: 10
+        }
+      })
+      this.debounce = this.$debounce(async () => {
+        this.pages = (await this.$likhaAPI.get('/pages?' + query)).data.data.map(c => c.attributes.name)
+        console.log('getPages', name, this.pages)
+        console.trace()
+        console.log('getting pages 2', name)
+      }, 1250)
+      this.debounce()
+      this.loading = false
+    },
+    async changedComponents (change) {
+      console.log('changes', change)
+      if (change.moved) {
+        const i = this.page.components.findIndex(c => {
+          return c.name !== change.moved.element.name &&
+          c.order === change.moved.newIndex
+        })
+        this.page.components[i].order = i
+      }
+      if (change.added) {
+        console.log('element', change.added.element)
+        const { name, props } = this.clonedComponent
+
+        const newArr = [
+          {
+            name,
+            props,
+            order: change.added.newIndex
+          }, ...this.page.components
+        ]
+          .filter(c => c.name)
+          .sort((a, b) => a.order - b.order)
+          .map((c, i) => ({ ...c, order: i }))
+
+        console.log('newArr', newArr)
+
+        this.page.components = newArr
+
+        // this.page.components
+      }
+    },
+    checkMove (e) {
+      console.log(e.draggedContext)
+      e.draggedContext.element.order = e.draggedContext.futureIndex
+      console.log('Future index: ' + e.draggedContext.futureIndex)
+    },
+    async getPage (name) {
+      this.page = {
+        name: '',
+        id: -1,
+        path: '',
+        components: [],
+        origComponents: ''
+      }
+      this.loading = true
+      const filters = {}
+      if (name) {
+        filters.$or = [
+          {
+            name: { $containsi: name }
+          },
+          {
+            path: { $containsi: name }
+          },
+          {
+            components: { $containsi: name }
+          }
+        ]
+      }
+      const query = this.$qs.stringify({
+        filters,
+        sort: ['name:desc'],
+        pagination: {
+          start: 0,
+          limit: 10
+        }
+      })
+      const result = (await this.$likhaAPI.get('/pages?' + query)).data.data[0]
+      const page = { id: result.id, ...result.attributes }
+      this.page = page
+      // this.pageComponents = (new Function('return ' + page.components))().sort((a, b) => a.order - b.order)
+      this.page.components = (new Function('return ' + page.components))().sort((a, b) => a.order - b.order)
+      this.page.origComponents = JSON.stringify(this.page.components)
+      console.log('getPageComponents', this.page)
+      this.debounce()
+      this.loading = false
+    },
+    async getComponents (name) {
+      console.log('getting components', name)
+      this.loading = true
+      const filters = {}
+      if (name) {
+        filters.$or = [
+          {
+            name: { $containsi: name }
+          },
+          {
+            templateDev: { $containsi: name }
+          },
+          {
+            templateStaging: { $containsi: name }
+          },
+          {
+            template: { $containsi: name }
+          }
+        ]
+      }
+      const query = this.$qs.stringify({
+        filters,
+        sort: ['name:desc'],
+        pagination: {
+          start: 0,
+          limit: 10
+        }
+      })
+      this.debounce = this.$debounce(async () => {
+        this.components = (await this.$likhaAPI.get('/components?' + query)).data.data.map(c => ({ ...c.attributes, props: {} }))
+        console.log('this.components', this.components)
+      }, 1250)
+      this.debounce()
+      this.loading = false
+    },
+    async save () {
+      const components = this.$JSON5.stringify(this.page.components, {
+        space: 2
+      })
+      await this.$likhaAPI.put('/pages/' + this.page.id, {
+        data: { components }
+      })
+
+      this.page.components = (new Function('return ' + components))().sort((a, b) => a.order - b.order)
+      this.page.origComponents = JSON.stringify(this.page.components)
+    }
+  },
+  data () {
+    return {
+      code: `
+        console.log('html', this);
+        const html = this.document.querySelector('html');
+        console.log('html', this);
+        html.style.overflow = 'hidden';
+      `,
+      loading: true,
+      page: {
+        name: '',
+        id: -1,
+        path: '',
+        components: [],
+        origComponents: ''
+      },
+      pageComponents: [],
+      pages: [],
+      dragging: false,
+      searchText: '',
+      env: '',
+      components: []
+    }
+  },
+  setup () {
+    const leftDrawerOpen = ref(false)
+    const rightDrawerOpen = ref(false)
+
+    return {
+      leftDrawerOpen,
+      toggleLeftDrawer () {
+        leftDrawerOpen.value = !leftDrawerOpen.value
+      },
+
+      rightDrawerOpen,
+      toggleRightDrawer () {
+        // rightDrawerOpen.value = !rightDrawerOpen.value
+      }
+    }
+  }
+}
+</script>
+
+<style>
+.ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
+</style>
