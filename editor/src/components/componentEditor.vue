@@ -59,7 +59,7 @@
               <likha-editor v-if="code3.length" :modelValue="code3" height="100%" :component="component" @saved="reloadPreview()" />
             </pane>
             <pane min-size="20" class="bg-dark">
-              <q-input dark dense v-model="query" label="query params" />
+              <q-input input-class="q-pa-md" dark dense v-model="query" placeholder="query params" />
               <!-- <div class="text-white"> {{ '/dev-env/lk-preview/' + component.name + '?' + query }} </div> -->
               <iframe v-if="component" ref="iframe" :src="$previewHost + '/dev-env/lk-preview/' + component.name + '?' + query" class="fit bg-white" frameborder="0"></iframe>
             </pane>

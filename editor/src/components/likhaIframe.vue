@@ -1,7 +1,8 @@
 <template>
     <div class="column"
       :class="{
-        border: showToolbar // ? '2px solid #1976d2 !important' : '',
+        'border shadow-24 z-top q-mx-md q-mb-md': showToolbar, // ? '2px solid #1976d2 !important' : '',
+        'full-width': !showToolbar
       }"
       @mouseover="showToolbar = true"
       @mouseleave="showToolbar = false"
@@ -9,27 +10,18 @@
       <iframe ref="iframeDev" :height="height" style="border:none;"
         v-if="env === '/dev-env'"
         class="shadow-transition"
-        :class="{
-          'shadow-24': showToolbar
-        }"
-        :src="$previewHost + env + '/lk-preview/' + component.name" frameborder="0"></iframe>
+        :src="src" frameborder="0"></iframe>
       <iframe ref="iframeStaging" :height="height" style="border:none;"
         v-else-if="env === '/staging-env'"
         class="shadow-transition"
-        :class="{
-          'shadow-24': showToolbar
-        }"
         :src="$previewHost + env + '/lk-preview/' + component.name" frameborder="0"></iframe>
       <iframe ref="iframe" :height="height" style="border:none;"
         v-else
         class="shadow-transition"
-        :class="{
-          'shadow-24': showToolbar
-        }"
         :src="$previewHost + env + '/lk-preview/' + component.name" frameborder="0"></iframe>
       <!-- <div v-show="showToolbar" class="absolute">header</div> -->
-      <q-bar v-show="component.name && (showToolbar || dragging)" dark class="handle bg-dark text-white absolute"
-        style="width: calc(100% - 300px) !important;"
+      <q-bar v-show="component.name && (showToolbar || dragging)" dark class="handle bg-dark text-white absolute shadow-10"
+        style="width: calc(98% - 300px) !important;"
       >
         <!-- <q-icon name="laptop_chromebook" /> -->
         <q-btn dense flat icon="settings" />
@@ -38,7 +30,7 @@
         </div>
 
         <q-space />
-        <q-btn dense flat icon="settings" />
+        <q-btn dense flat icon="settings" @click="openPropsSettings" />
         <q-btn dense flat icon="delete" @click="$emit('remove', component.name, component.order)" />
       </q-bar>
     </div>
@@ -48,7 +40,7 @@
 
 export default {
   props: ['component', 'dragging', 'env'],
-  emits: ['remove'],
+  emits: ['remove', 'update:model-value'],
   watch: {
     async env (newEnv, oldEnv) {
       await this.$nextTick()
@@ -85,6 +77,40 @@ export default {
     }
     window.addEventListener('message', this.listener)
   },
+  methods: {
+    async openPropsSettings () {
+      const component = this.component
+      console.log(import('components/propEditor.vue'))
+      this.$q.dialog({
+        component: (await import('components/propEditor.vue')).default,
+
+        // props forwarded to your custom component
+        componentProps: {
+          component,
+          env: this.env
+          // ...more..props...
+        }
+      }).onOk((data) => {
+        console.log('OK', data, component)
+        this.$emit('update:model-value', { ...component, ...data })
+      }).onCancel(() => {
+        console.log('Cancel')
+      }).onDismiss(() => {
+        console.log('Called on OK or Cancel')
+      })
+    }
+  },
+  computed: {
+    src () {
+      let env = ''
+      if (this.env === '/dev-env') env = 'Dev'
+      if (this.env === '/staging-env') env = 'Staging'
+      const query = this.$qs.stringify({
+        lkProps: this.component['props' + env]
+      })
+      return this.$previewHost + this.env + '/lk-preview/' + this.component.name + '?' + query
+    }
+  },
   data () {
     return {
       showToolbar: false,
@@ -118,5 +144,7 @@ iframe {
   border: 1px solid rgba(255, 0, 0, .5);
     -webkit-background-clip: padding-box; /* for Safari */
     background-clip: padding-box; /* for IE9+, Firefox 4+, Opera, Chrome */
+
+  width: 98%
 }
 </style>

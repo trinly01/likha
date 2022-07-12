@@ -11,6 +11,8 @@ import { useRoute } from 'vue-router'
 
 // console.log('getCurrentInstance()', getCurrentInstance())
 
+let comp = {}
+
 export default defineComponent({
   name: 'LkComponent',
   el: 'div',
@@ -50,7 +52,7 @@ export default defineComponent({
     })
 
     try {
-      const comp = (await $likhaAPI.get('/components?' + query)).data.data[0].attributes
+      comp = (await $likhaAPI.get('/components?' + query)).data.data[0].attributes
       console.log('props.name', $route.path, comp)
 
       let env = $route.path.split('/')[1].split('-')[0]
@@ -113,6 +115,7 @@ export default defineComponent({
           break
       }
       const Env = env.charAt(0).toUpperCase() + env.slice(1)
+      console.log('attributes', comp)
       console.error('Component Error:', props.name)
       console.error('Env:', Env || 'Prod')
       console.error(error)

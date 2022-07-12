@@ -122,9 +122,9 @@
       <div class="column">
         <!-- <likha-iframe v-for="comp in page.components" :key="comp.name" :component="comp" /> -->
         <draggable
-          class="dragArea list-group"
+          class="dragArea list-group column items-center"
           :class="{
-            'q-gutter-md q-pa-md': dragging
+            'q-gutter-md q-ma-md': dragging
           }"
           ghost-class="ghost"
           handle=".handle"
@@ -134,10 +134,7 @@
           @start="dragging = true" @end="dragging = false" :move="checkMove"
           @change="changedComponents">
           <template #item="{ element, index }">
-            <div class="handle list-group-item">
-              <!-- {{ element.name }} -->
-              <likha-iframe :env="env" :component="element" :dragging="dragging" @remove="removeComponent(element.name, index)" />
-            </div>
+            <likha-iframe v-model="page.components[index]" class="list-group-item col" :env="env" :component="element" :dragging="dragging" @remove="removeComponent(element.name, index)" />
           </template>
         </draggable>
       </div>
@@ -163,7 +160,11 @@
 import { ref } from 'vue'
 
 export default {
-  unmounted () {
+  beforeUnmount () {
+    document.removeEventListener('keydown', this.ctrlSave)
+  },
+  mounted () {
+    document.addEventListener('keydown', this.ctrlSave)
   },
   async beforeMount () {
     const { name } = this.$route.params
@@ -351,13 +352,23 @@ export default {
       this.debounce()
       this.loading = false
     },
+    async ctrlSave (e) {
+      if (!(e.keyCode === 83 && e.ctrlKey)) {
+        return false
+      }
+
+      e.preventDefault()
+      this.save()
+    },
     async save () {
       const components = this.$JSON5.stringify(this.page.components, {
         space: 2
       })
-      await this.$likhaAPI.put('/pages/' + this.page.id, {
+      const savedPage = await this.$likhaAPI.put('/pages/' + this.page.id, {
         data: { components }
       })
+
+      console.log('savedPage', savedPage)
 
       this.page.components = (new Function('return ' + components))().sort((a, b) => a.order - b.order)
       this.page.origComponents = JSON.stringify(this.page.components)

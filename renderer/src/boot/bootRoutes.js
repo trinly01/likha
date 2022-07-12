@@ -21,14 +21,20 @@ export default boot(async ({ app, router }) => {
     const component = defineComponent({
       name: 'lk-' + name + '-page',
       data: () => ({
-        components: orderBy((new Function('return ' + components))(), ['index'], ['asc'])
+        components: orderBy((new Function('return ' + components))(), ['index'], ['asc']),
+        env: ''
       }),
-      mounted () {
+      created () {
         console.log('page components', this.components)
+        this.env = this.$route.path.split('/')[1].split('-')[0]
+        this.env = this.env.charAt(0).toUpperCase() + this.env.slice(1)
+        for (const c of this.components) {
+          console.log('c', this.env, c, c['props' + this.env])
+        }
       },
       template: `
         <div>
-          <lk-component  v-for="(c, i) in components" :key="c.name+'-'+i" :name="c.name" :class="c.class" :props="c.props" />
+          <lk-component  v-for="(c, i) in components" :key="c.name+'-'+i" :name="c.name" :class="c.class" :props="{ ...c['props' + env] }" />
         </div>
       `
     })
@@ -62,7 +68,7 @@ export default boot(async ({ app, router }) => {
 
   const component = defineComponent({
     name: 'lk-preview',
-    mounted () {
+    created () {
       let env = this.$route.path.split('/')[1].split('-')[0]
       switch (env) {
         case 'dev':
@@ -75,10 +81,24 @@ export default boot(async ({ app, router }) => {
       }
       const Env = env.charAt(0).toUpperCase() + env.slice(1)
       console.log('lk-preview ' + Env, this.$route.params.name)
+      if (process.browser) {
+        this.props = this.$qs.parse(window.location.search.replace('?', '')).lkProps
+      } else {
+        const search = this.$route.fullPath.replace('?', 'lkSep').split('lkSep')[1]
+        if (search) {
+          this.props = this.$qs.parse(this.$route.fullPath.replace('?', 'lkSep').split('lkSep')[1]).lkProps
+        }
+      }
+      // console.log('lkProps ' + Env, this.$qs.parse(window.location.search.replace('?', '')))
+    },
+    data () {
+      return {
+        props: {}
+      }
     },
     template: `
       <div>
-        <lk-component :name="$route.params.name" />
+        <lk-component :name="$route.params.name" :props="{ ...props }" />
       </div>
     `
   })
