@@ -112,3 +112,9 @@ exports
 *.cache
 build
 .strapi-updater.json
+
+############################
+# LIKA CUSTOM IGNORE
+############################
+
+package-lock.json
