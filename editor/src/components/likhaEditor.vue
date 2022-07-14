@@ -23,7 +23,7 @@
 </template>
 <script>
 /* eslint-disable new-cap */
-import { defineComponent, nextTick, getCurrentInstance } from 'vue'
+import { defineComponent, nextTick } from 'vue'
 
 // import onResize from 'resize-event'
 
@@ -92,11 +92,11 @@ export default defineComponent({
   },
   methods: {
     minimize () {
-      console.log('parent change size', this.parent)
+      // console.log('parent change size', this.parent)
       // this.parent.data.style.height = '20%'
     },
     restore () {
-      console.log('parent change size', this.parent)
+      // console.log('parent change size', this.parent)
       this.parent.data.style.height = '20%'
     },
     async save () {
@@ -104,7 +104,7 @@ export default defineComponent({
       for (const code of this.modelValue) {
         data[code.prop + 'Dev'] = this['monacoEditor-' + code.prop].model.getValue()
       }
-      console.log('saving', this.component.id)
+      // console.log('saving', this.component.id)
       try {
         this.loading = true
         await this.$likhaAPI.put('/components/' + this.component.id, { data })
@@ -124,18 +124,18 @@ export default defineComponent({
     }
   },
   async mounted () {
-    console.log(this.parent = getCurrentInstance().parent)
-    console.log('parent')
+    // console.log(this.parent = getCurrentInstance().parent)
+    // console.log('parent')
     for (const code of this.modelValue) {
       if (this['monacoEditor-' + code.prop]) {
         this['monacoEditor-' + code.prop].dispose()
       }
     }
-    console.log('this.modelValue', this.modelValue)
+    // console.log('this.modelValue', this.modelValue)
     this.codes = this.modelValue || []
     await nextTick()
-    console.log('this.codes', this.codes)
-    console.log('this.$refsthis.$refs', this.$refs)
+    // console.log('this.codes', this.codes)
+    // console.log('this.$refsthis.$refs', this.$refs)
     if (this.codes.length) this.tab = this.codes[0].prop
 
     // console.log('DarkPlus', DarkPlus)

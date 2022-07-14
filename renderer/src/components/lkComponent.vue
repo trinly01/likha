@@ -31,10 +31,11 @@ export default defineComponent({
     const lkComponent = getCurrentInstance()
     const { $likhaAPI, $qs } = lkComponent.appContext.config.globalProperties
     const refComp = ref(null)
+    let area = ''
 
     const $route = useRoute()
 
-    console.log('propsPogi', props)
+    // console.log('propsPogi', props)
 
     const query = $qs.stringify({
       filters: {
@@ -51,9 +52,11 @@ export default defineComponent({
       encodeValuesOnly: true
     })
 
+    const $quasar = await import('quasar')
+
     try {
       comp = (await $likhaAPI.get('/components?' + query)).data.data[0].attributes
-      console.log('props.name', $route.path, comp)
+      // console.log('props.name', $route.path, comp)
 
       let env = $route.path.split('/')[1].split('-')[0]
       switch (env) {
@@ -66,7 +69,7 @@ export default defineComponent({
           break
       }
       const Env = env.charAt(0).toUpperCase() + env.slice(1)
-      console.log('env', Env, comp['data' + Env])
+      // console.log('env', Env, comp['data' + Env])
 
       const addReturnIfNeeded = str => {
         if (typeof str !== 'string') return 'return ' + str
@@ -75,28 +78,56 @@ export default defineComponent({
         return 'return ' + str
       }
 
+      area = 'props' + Env
+      const props = (new Function(addReturnIfNeeded(comp[area])))() || []
+      area = 'emits' + Env
+      const emits = (new Function(addReturnIfNeeded(comp['emits' + Env])))() || []
+      area = 'data' + Env
+      const data = (new Function(addReturnIfNeeded(comp[area])))
+      area = 'computed' + Env
+      const computed = (new Function(addReturnIfNeeded(comp['computed' + Env])))() | {}
+      area = 'methods' + Env
+      const methods = (new Function(addReturnIfNeeded(comp[area])))() || {}
+      area = 'lifeCycleEvents' + Env
+      const lifeCycleEvents = (new Function(addReturnIfNeeded(comp[area])))() || {}
+
+      area = 'quasarComponents' + Env
+      const components = {}
+      const qComps = (new Function(addReturnIfNeeded(comp[area])))() || []
+      qComps.forEach(componentName => {
+        // console.log('$q[componentName]', $quasar[componentName])
+        components[componentName] = $quasar[componentName]
+      })
+
+      // console.log('lkComponent.appContext.config.globalProperties.$q', lkComponent.appContext.config.globalProperties.$q)
+
+      // lkComponent.appContext.config.globalProperties.$q.notify = $quasar.Notify
+      // console.log('notify;;;', lkComponent.appContext.config.globalProperties.$q)
+      // lkComponent.appContext.config.globalProperties.$q.Notify = ($quasar.useQuasar()).Notify
+
       const cmptStructure = {
+        components,
         name: comp.name,
         template: `<div component="${comp.name}">${comp['template' + Env]}</div>`,
-        props: (new Function(addReturnIfNeeded(comp['props' + Env])))(),
-        emits: (new Function(addReturnIfNeeded(comp['emits' + Env])))(),
-        data: (new Function(addReturnIfNeeded(comp['data' + Env]))),
-        computed: (new Function(addReturnIfNeeded(comp['computed' + Env])))(),
-        methods: (new Function(addReturnIfNeeded(comp['methods' + Env])))(),
-        ...(new Function(addReturnIfNeeded(comp['lifeCycleEvents' + Env])))()
+        props,
+        emits,
+        data,
+        computed,
+        methods,
+        ...lifeCycleEvents
       }
 
       // console.log('lkComponent', lkComponent)
 
       const style = ref(comp['style' + Env])
 
-      console.log('cmptStructure', cmptStructure)
+      // console.log('cmptStructure', cmptStructure)
 
       const cmpt = defineComponent(cmptStructure)
 
-      console.log('cmpt', cmpt)
+      // console.log('cmpt', cmpt, lkComponent)
 
-      console.log('process.env.CLIENT', process.env.CLIENT)
+      // console.log('process.env.CLIENT', process.env.CLIENT)
 
       return {
         refComp,
@@ -104,20 +135,21 @@ export default defineComponent({
         style
       }
     } catch (error) {
-      let env = $route.path.split('/')[1].split('-')[0]
-      switch (env) {
-        case 'dev':
-          break
-        case 'staging':
-          break
-        default:
-          env = ''
-          break
-      }
-      const Env = env.charAt(0).toUpperCase() + env.slice(1)
-      console.log('attributes', comp)
+      // let env = $route.path.split('/')[1].split('-')[0]
+      // switch (env) {
+      //   case 'dev':
+      //     break
+      //   case 'staging':
+      //     break
+      //   default:
+      //     env = ''
+      //     break
+      // }
+      // const Env = env.charAt(0).toUpperCase() + env.slice(1)
+      // console.log('attributes', comp)
       console.error('Component Error:', props.name)
-      console.error('Env:', Env || 'Prod')
+      // console.error('Env:', Env || 'Prod')
+      console.error('Area:', area)
       console.error(error)
       return {
         refComp,
@@ -135,8 +167,8 @@ export default defineComponent({
     }
   },
   mounted () {
-    console.log('refComp', this.$refs.refComp)
-    console.log('style', this.style)
+    // console.log('refComp', this.$refs.refComp)
+    // console.log('style', this.style)
     if (process.env.CLIENT) {
       const style = this.style
       const styleComp = document.createElement('style')
@@ -144,9 +176,9 @@ export default defineComponent({
       styleComp.setAttributeNode(document.createAttribute('scopped'))
       styleComp.setAttributeNode(document.createAttribute('scoped'))
       styleComp.appendChild(document.createTextNode(style))
-      console.log('this.$refs.refComp', this.$refs.refComp)
+      // console.log('this.$refs.refComp', this.$refs.refComp)
       this.$refs.refComp.$el.appendChild(styleComp)
-      console.log('this.$refs.refComp.$el', this.$refs.refComp.$el)
+      // console.log('this.$refs.refComp.$el', this.$refs.refComp.$el)
 
       // const env = this.$route.path.split('/')[1].split('-')[0]
       // const Env = env.charAt(0).toUpperCase() + env.slice(1)
@@ -179,7 +211,7 @@ export default defineComponent({
         }
 
         window.parent.postMessage(getHeight(), '*')
-        console.log('getHeight()', getHeight())
+        // console.og('getHeight()', getHeight())
         const observer = new ResizeObserver((entries) => {
           for (const entry of entries) {
             window.parent.postMessage(getHeight(entry), '*')

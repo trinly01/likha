@@ -174,9 +174,9 @@ export default {
   },
   computed: {
     hasChanges () {
-      console.log('orig', this.page.origComponents)
+      // console.log('orig', this.page.origComponents)
       const changes = JSON.stringify(this.page.components)
-      console.log('change []', this.page.origComponents)
+      // console.log('change []', this.page.origComponents)
       return this.page.origComponents !== changes
     }
   },
@@ -200,14 +200,14 @@ export default {
       })
     },
     async clone (c) {
-      console.log('clone', c)
+      // console.log('clone', c)
       this.clonedComponent = {
         name: c.name,
         props: {}
       }
     },
     async getPages (name) {
-      console.log('getting pages 1', name)
+      // console.log('getting pages 1', name)
       this.loading = true
       const filters = {}
       if (name) {
@@ -233,15 +233,15 @@ export default {
       })
       this.debounce = this.$debounce(async () => {
         this.pages = (await this.$likhaAPI.get('/pages?' + query)).data.data.map(c => c.attributes.name)
-        console.log('getPages', name, this.pages)
+        // console.log('getPages', name, this.pages)
         console.trace()
-        console.log('getting pages 2', name)
+        // console.log('getting pages 2', name)
       }, 1250)
       this.debounce()
       this.loading = false
     },
     async changedComponents (change) {
-      console.log('changes', change)
+      // console.log('changes', change)
       if (change.moved) {
         const i = this.page.components.findIndex(c => {
           return c.name !== change.moved.element.name &&
@@ -250,7 +250,7 @@ export default {
         this.page.components[i].order = i
       }
       if (change.added) {
-        console.log('element', change.added.element)
+        // console.log('element', change.added.element)
         const { name, props } = this.clonedComponent
 
         const newArr = [
@@ -264,7 +264,7 @@ export default {
           .sort((a, b) => a.order - b.order)
           .map((c, i) => ({ ...c, order: i }))
 
-        console.log('newArr', newArr)
+        // console.log('newArr', newArr)
 
         this.page.components = newArr
 
@@ -272,9 +272,9 @@ export default {
       }
     },
     checkMove (e) {
-      console.log(e.draggedContext)
+      // console.log(e.draggedContext)
       e.draggedContext.element.order = e.draggedContext.futureIndex
-      console.log('Future index: ' + e.draggedContext.futureIndex)
+      // console.log('Future index: ' + e.draggedContext.futureIndex)
     },
     async getPage (name) {
       this.page = {
@@ -313,12 +313,12 @@ export default {
       // this.pageComponents = (new Function('return ' + page.components))().sort((a, b) => a.order - b.order)
       this.page.components = (new Function('return ' + page.components))().sort((a, b) => a.order - b.order)
       this.page.origComponents = JSON.stringify(this.page.components)
-      console.log('getPageComponents', this.page)
+      // console.log('getPageComponents', this.page)
       this.debounce()
       this.loading = false
     },
     async getComponents (name) {
-      console.log('getting components', name)
+      // console.log('getting components', name)
       this.loading = true
       const filters = {}
       if (name) {
@@ -347,7 +347,7 @@ export default {
       })
       this.debounce = this.$debounce(async () => {
         this.components = (await this.$likhaAPI.get('/components?' + query)).data.data.map(c => ({ ...c.attributes, props: {} }))
-        console.log('this.components', this.components)
+        // console.log('this.components', this.components)
       }, 1250)
       this.debounce()
       this.loading = false
@@ -364,11 +364,11 @@ export default {
       const components = this.$JSON5.stringify(this.page.components, {
         space: 2
       })
-      const savedPage = await this.$likhaAPI.put('/pages/' + this.page.id, {
+      await this.$likhaAPI.put('/pages/' + this.page.id, {
         data: { components }
       })
 
-      console.log('savedPage', savedPage)
+      // console.log('savedPage', savedPage)
 
       this.page.components = (new Function('return ' + components))().sort((a, b) => a.order - b.order)
       this.page.origComponents = JSON.stringify(this.page.components)
@@ -377,9 +377,9 @@ export default {
   data () {
     return {
       code: `
-        console.log('html', this);
+        // console.log('html', this);
         const html = this.document.querySelector('html');
-        console.log('html', this);
+        // console.log('html', this);
         html.style.overflow = 'hidden';
       `,
       loading: true,

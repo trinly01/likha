@@ -64,7 +64,7 @@ onBeforeMount(async () => {
     encodeValuesOnly: true
   })
   const { id, attributes } = (await $likhaAPI.get('/components?' + query)).data.data[0]
-  console.log('propEditor', { id, attributes }, query)
+  // console.log('propEditor', { id, attributes }, query)
 
   const addReturnIfNeeded = str => {
     if (typeof str !== 'string') return 'return ' + str
@@ -75,7 +75,7 @@ onBeforeMount(async () => {
 
   // eslint-disable-next-line no-new-func
   const componentProps = (new Function(addReturnIfNeeded(attributes['props' + env])))() || {}
-  console.log('componentProps', componentProps, props.component['props' + env])
+  // console.log('componentProps', componentProps, props.component['props' + env])
 
   const propsValue = (props.component['props' + env]) || {}
 
@@ -87,10 +87,10 @@ onBeforeMount(async () => {
   } else if (dataType === 'Array') {
     data.props = componentProps.map(p => {
       const value = propsValue[p] || ''
-      console.log('propsValue', propsValue, p, propsValue[p])
+      // console.log('propsValue', propsValue, p, propsValue[p])
       return [p, { value, type: String }]
     })
-    console.log('data.props', data.props)
+    // console.log('data.props', data.props)
   }
 
   // console.log('propsValue', propsValue, componentProps, dataType, data.props)
@@ -121,7 +121,7 @@ function save () {
     newProps['props' + env][p[0]] = p[1].value
   }
 
-  console.log('newProps', newProps, data.props)
+  // console.log('newProps', newProps, data.props)
 
   onDialogOK(newProps)
   // or with payload: onDialogOK({ ... })

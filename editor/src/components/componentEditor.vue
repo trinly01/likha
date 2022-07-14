@@ -37,7 +37,12 @@
         </q-select>
       </q-toolbar-title>
 
-      <q-btn flat round dense icon="whatshot" />
+      <!-- <q-btn flat round dense icon="whatshot" /> -->
+      <span class="q-gutter-sm">
+        <q-btn disabled icon="history" label="History" />
+        <q-btn icon="approval" label="stage" @click="stage" :loading="loading" />
+        <q-btn icon="precision_manufacturing" label="Publish" @click="publish" />
+      </span>
     </q-toolbar>
     <div class="row bg-pink" style="height: calc(100vh - 56px); max-height: calc(100vh - 56px);">
       <splitpanes class="default-theme">
@@ -58,10 +63,17 @@
             <pane min-size="20" size="30">
               <likha-editor v-if="code3.length" :modelValue="code3" height="100%" :component="component" @saved="reloadPreview()" />
             </pane>
-            <pane min-size="20" class="bg-dark">
-              <q-input input-class="q-pa-md" dark dense v-model="query" placeholder="query params" />
+            <pane min-size="20" class="bg-dark col column">
+              <div class="row">
+                <q-input class="col" input-class="q-pa-md" dark dense v-model="query" placeholder="query params" />
+                <q-tabs class="bg-dark text-white" align="right" dense v-model="env">
+                  <q-tab name="/dev-env" label="dev" />
+                  <q-tab name="/staging-env" label="staging" />
+                  <q-tab name="" label="prod" />
+                </q-tabs>
+              </div>
               <!-- <div class="text-white"> {{ '/dev-env/lk-preview/' + component.name + '?' + query }} </div> -->
-              <iframe v-if="component" ref="iframe" :src="$previewHost + '/dev-env/lk-preview/' + component.name + '?' + query" class="fit bg-white" frameborder="0"></iframe>
+              <iframe v-if="component" ref="iframe" :src="$previewHost + env + '/lk-preview/' + component.name + '?' + query" class="col bg-white" frameborder="0"></iframe>
             </pane>
           </splitpanes>
         </pane>
@@ -103,9 +115,90 @@ export default defineComponent({
     code3: [],
     components: ['asd', 'qwe'],
     code: '{}',
-    query: ''
+    query: '',
+    env: '/dev-env'
   }),
   methods: {
+    async publish () {
+      this.env = '/staging-env'
+      this.$q.dialog({
+        dark: true,
+        title: 'Confirm Deployment',
+        message: 'Are you sure you want to publish ' + this.component.name + ' now?',
+        cancel: true,
+        ok: {
+          color: 'negative',
+          label: 'Publish'
+          // flat: true
+        },
+        focus: 'none',
+        persistent: true
+      }).onOk(async () => {
+        const query = this.$qs.stringify({
+          filters: {
+            component: this.component.id
+          },
+          sort: ['createdAt:desc'],
+          pagination: {
+            start: 0,
+            limit: 1
+          }
+        })
+        const { id: versionID, attributes: version } = (await this.$likhaAPI.get('/versions?' + query)).data.data[0]
+
+        await this.$likhaAPI.put('/components/' + this.component.id, {
+          data: JSON.parse(version.codes)
+        })
+        // const { id, attributes } = (await this.$likhaAPI.get('/components?' + query)).data.data[0]
+
+        const release = {
+          component: this.component.id,
+          version: versionID
+        }
+
+        // console.log('release', release, version.codes)
+
+        this.env = ''
+
+        await this.$likhaAPI.post('/releases', {
+          data: release
+        })
+
+        this.$q.notify({
+          position: 'top-right',
+          color: 'positive',
+          icon: 'verified',
+          message: 'Deployed to Production!'
+        })
+      }).onOk(() => {
+        // console.log('>>>> second OK catcher')
+      }).onCancel(() => {
+        // console.log('>>>> Cancel')
+      }).onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      })
+    },
+    async stage () {
+      this.env = '/dev-env'
+      this.$q.dialog({
+        component: (await import('components/stagingDeploy.vue')).default,
+
+        // props forwarded to your custom component
+        componentProps: {
+          component: this.component,
+          codes: [...this.code1, ...this.code2, ...this.code3]
+          // ...more..props...
+        }
+      }).onOk((data) => {
+        this.env = '/staging-env'
+        this.$q.notify({
+          position: 'top-right',
+          color: 'positive',
+          icon: 'verified',
+          message: 'Deployed to Staging'
+        })
+      })
+    },
     async getComponents (name) {
       this.loading = true
       const filters = {}
@@ -135,7 +228,7 @@ export default defineComponent({
       })
       this.debounce = this.$debounce(async () => {
         this.components = (await this.$likhaAPI.get('/components?' + query)).data.data.map(c => c.attributes.name)
-        console.log('getComponents', this.components)
+        // console.log('getComponents', this.components)
       }, 1250)
       this.debounce()
       this.loading = false
@@ -164,7 +257,7 @@ export default defineComponent({
         const { id, attributes } = (await this.$likhaAPI.get('/components?' + query)).data.data[0]
         const comp = this.component = { id, ...attributes }
         this.componentName = comp.name
-        console.log('Code Component', this.component)
+        // console.log('Code Component', this.component)
 
         const getLangByProp = (key) => {
           switch (key) {
@@ -183,16 +276,16 @@ export default defineComponent({
           language: getLangByProp(key)
         }))
 
-        this.code1 = getByProps(['template', 'data'])
-        console.log('this.code1', this.code1)
+        this.code1 = getByProps(['template', 'data', 'quasarComponents'])
+        // console.log('this.code1', this.code1)
         this.code2 = getByProps(['methods', 'computed', 'lifeCycleEvents'])
-        console.log('this.code2', this.code2)
+        // console.log('this.code2', this.code2)
         this.code3 = getByProps(['props', 'emits', 'style'])
       }
       this.loading = false
     },
     reloadPreview () {
-      console.log('iframe this.$refs', this.$refs)
+      // console.log('iframe this.$refs', this.$refs)
       const previousPage = this.$refs.iframe.src
       this.$refs.iframe.src = ''
       this.$refs.iframe.src = previousPage

@@ -54,8 +54,8 @@ export default {
   async beforeMount () {
     this.listener = async (event) => {
       if (event.data.height && event.data.name === this.component.name) {
-        console.log('message', event.data)
-        console.log('this.$refs', this.$refs)
+        // console.log('message', event.data)
+        // console.log('this.$refs', this.$refs)
 
         switch (event.data.env) {
           case 'dev':
@@ -80,7 +80,7 @@ export default {
   methods: {
     async openPropsSettings () {
       const component = this.component
-      console.log(import('components/propEditor.vue'))
+      // console.log(import('components/propEditor.vue'))
       this.$q.dialog({
         component: (await import('components/propEditor.vue')).default,
 
@@ -91,12 +91,8 @@ export default {
           // ...more..props...
         }
       }).onOk((data) => {
-        console.log('OK', data, component)
+        // console.log('OK', data, component)
         this.$emit('update:model-value', { ...component, ...data })
-      }).onCancel(() => {
-        console.log('Cancel')
-      }).onDismiss(() => {
-        console.log('Called on OK or Cancel')
       })
     }
   },

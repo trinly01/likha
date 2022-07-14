@@ -14,8 +14,8 @@ export default boot(async ({ app, router }) => {
   }, {
     encodeValuesOnly: true
   })
-
-  const routes = (await $likhaAPI.get('/pages?' + query)).data.data.map((p) => {
+  const pages = (await $likhaAPI.get('/pages?' + query)).data.data
+  pages.map((p) => {
     const { name, path, components } = p.attributes
 
     const component = defineComponent({
@@ -25,12 +25,12 @@ export default boot(async ({ app, router }) => {
         env: ''
       }),
       created () {
-        console.log('page components', this.components)
+        // console.log('page components', this.components)
         this.env = this.$route.path.split('/')[1].split('-')[0]
         this.env = this.env.charAt(0).toUpperCase() + this.env.slice(1)
-        for (const c of this.components) {
-          console.log('c', this.env, c, c['props' + this.env])
-        }
+        // for (const c of this.components) {
+        //   console.log('c', this.env, c, c['props' + this.env])
+        // }
       },
       template: `
         <div>
@@ -61,7 +61,7 @@ export default boot(async ({ app, router }) => {
 
     return r
   })
-  console.log('routes', routes)
+  // console.log('routes', routes)
   // router
 
   // PREVIEW
@@ -79,8 +79,8 @@ export default boot(async ({ app, router }) => {
           env = ''
           break
       }
-      const Env = env.charAt(0).toUpperCase() + env.slice(1)
-      console.log('lk-preview ' + Env, this.$route.params.name)
+      // const Env = env.charAt(0).toUpperCase() + env.slice(1)
+      // console.log('lk-preview ' + Env, this.$route.params.name)
       if (process.browser) {
         this.props = this.$qs.parse(window.location.search.replace('?', '')).lkProps
       } else {
