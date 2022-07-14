@@ -4,10 +4,11 @@
   "info": {
     "singularName": "release",
     "pluralName": "releases",
-    "displayName": "release"
+    "displayName": "release",
+    "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {

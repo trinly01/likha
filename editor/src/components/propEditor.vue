@@ -63,7 +63,7 @@ onBeforeMount(async () => {
   }, {
     encodeValuesOnly: true
   })
-  const { id, attributes } = (await $likhaAPI.get('/components?' + query)).data.data[0]
+  const { attributes } = (await $likhaAPI.get('/components?' + query)).data.data[0]
   // console.log('propEditor', { id, attributes }, query)
 
   const addReturnIfNeeded = str => {

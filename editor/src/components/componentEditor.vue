@@ -2,9 +2,9 @@
   <div class="col bg-grey window-height">
     <q-toolbar class="bg-primary text-white">
       <q-btn flat round dense icon="menu" class="q-mr-sm" />
-      <q-avatar>
+      <!-- <q-avatar>
         <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg">
-      </q-avatar>
+      </q-avatar> -->
 
       <q-toolbar-title>
         <q-select
