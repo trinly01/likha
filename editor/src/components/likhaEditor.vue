@@ -172,7 +172,7 @@ export default defineComponent({
 
       this['monacoEditor-' + code.prop].onKeyDown((event) => {
         const { keyCode, ctrlKey, metaKey } = event
-        console.log('pressing', keyCode)
+        // console.log('pressing', keyCode)
         if ((keyCode === 49) && (metaKey || ctrlKey)) {
           event.preventDefault()
           if (this.codeHasChanges) this.save()

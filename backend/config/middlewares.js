@@ -6,6 +6,8 @@ module.exports = [
       contentSecurityPolicy: {
         directives: {
           'default-src': ["'self'", '*'],
+          'script-src': ["'unsafe-eval'", '*'],
+          'script-src-attr': ["'unsafe-inline'", '*'],
         }
       }
     },

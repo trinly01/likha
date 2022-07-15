@@ -156,6 +156,7 @@ export default defineComponent({
       // console.error('Env:', Env || 'Prod')
       console.error('Area:', area)
       console.error(error)
+      console.trace()
       return {
         refComp,
         cmpt: defineComponent({

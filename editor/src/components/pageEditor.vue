@@ -244,7 +244,6 @@ export default {
       this.debounce = this.$debounce(async () => {
         this.pages = (await this.$likhaAPI.get('/pages?' + query)).data.data.map(c => c.attributes.name)
         // console.log('getPages', name, this.pages)
-        console.trace()
         // console.log('getting pages 2', name)
       }, 1250)
       this.debounce()
