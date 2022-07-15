@@ -1,5 +1,5 @@
 <template>
-  <component ref="refComp" :is="cmpt" v-bind="props"  />
+  <component :is="cmpt" v-bind="props"  />
 </template>
 <script>
 /* eslint-disable no-new-func */
@@ -15,7 +15,6 @@ let comp = {}
 
 export default defineComponent({
   name: 'LkComponent',
-  el: 'div',
   props: {
     name: {
       type: String,
@@ -108,7 +107,14 @@ export default defineComponent({
       const cmptStructure = {
         components,
         name: comp.name,
-        template: `<div component="${comp.name}">${comp['template' + Env]}</div>`,
+        template: `
+          <div component="${comp.name}">
+            ${comp['template' + Env]}
+            <component scoped scopped is="style">
+              ${comp['style' + Env]}
+            </component>
+          </div>
+        `,
         props,
         emits,
         data,
@@ -119,7 +125,7 @@ export default defineComponent({
 
       // console.log('lkComponent', lkComponent)
 
-      const style = ref(comp['style' + Env])
+      // const style = ref(comp['style' + Env])
 
       // console.log('cmptStructure', cmptStructure)
 
@@ -131,8 +137,7 @@ export default defineComponent({
 
       return {
         refComp,
-        cmpt,
-        style
+        cmpt
       }
     } catch (error) {
       // let env = $route.path.split('/')[1].split('-')[0]
@@ -170,14 +175,14 @@ export default defineComponent({
     // console.log('refComp', this.$refs.refComp)
     // console.log('style', this.style)
     if (process.env.CLIENT) {
-      const style = this.style
-      const styleComp = document.createElement('style')
-      styleComp.type = 'text/css'
-      styleComp.setAttributeNode(document.createAttribute('scopped'))
-      styleComp.setAttributeNode(document.createAttribute('scoped'))
-      styleComp.appendChild(document.createTextNode(style))
+      // const style = this.style
+      // const styleComp = document.createElement('style')
+      // styleComp.type = 'text/css'
+      // styleComp.setAttributeNode(document.createAttribute('scopped'))
+      // styleComp.setAttributeNode(document.createAttribute('scoped'))
+      // styleComp.appendChild(document.createTextNode(style))
       // console.log('this.$refs.refComp', this.$refs.refComp)
-      this.$refs.refComp.$el.appendChild(styleComp)
+      // this.$refs.refComp.$el.appendChild(styleComp)
       // console.log('this.$refs.refComp.$el', this.$refs.refComp.$el)
 
       // const env = this.$route.path.split('/')[1].split('-')[0]
