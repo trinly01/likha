@@ -104,8 +104,12 @@
                       `'>
                     </iframe>
                     <div
-                      style="background-color: rgba(0, 0, 0, 0.47);"
-                      class="handle absolute-bottom text-subtitle2 text-center q-pa-md"
+                      style="
+                        background-color: rgba(0, 0, 0, 0.6);
+                        backdrop-filter: blur(4px);
+                        -webkit-backdrop-filter: blur(4px);
+                      "
+                      class="text-white handle absolute-bottom text-subtitle2 text-center q-pa-md"
                     >
                       {{ element.name }}
                     </div>
@@ -124,7 +128,7 @@
         <draggable
           class="dragArea list-group column items-center"
           :class="{
-            'q-gutter-md q-ma-md': dragging
+            'q-gutter-md q-ma-sm bg-green-2 q-pa-sm min-height': dragging
           }"
           ghost-class="ghost"
           handle=".handle"
@@ -134,7 +138,13 @@
           @start="dragging = true" @end="dragging = false" :move="checkMove"
           @change="changedComponents">
           <template #item="{ element, index }">
-            <likha-iframe v-model="page.components[index]" class="list-group-item col" :env="env" :component="element" :dragging="dragging" @remove="removeComponent(element.name, index)" />
+            <likha-iframe
+              v-model="page.components[index]"
+              class="list-group-item col"
+              :class="{
+                'max-height-100': dragging
+              }"
+              :env="env" :component="element" :dragging="dragging" @remove="removeComponent(element.name, index)" />
           </template>
         </draggable>
       </div>
@@ -419,7 +429,16 @@ export default {
 
 <style>
 .ghost {
-  opacity: 0.5;
-  background: #c8ebfb;
+  opacity: 0.5 !important;
+  background: #c8ebfb !important;
+}
+
+.min-height {
+  min-height: 100px !important;
+}
+
+.max-height-100 {
+  max-height: 100px !important;
+  overflow: hidden !important;
 }
 </style>

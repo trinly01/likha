@@ -9,14 +9,17 @@
     >
       <iframe ref="iframeDev" :height="height" style="border:none;"
         v-if="env === '/dev-env'"
+        scrolling="no"
         class="shadow-transition"
         :src="src" frameborder="0"></iframe>
       <iframe ref="iframeStaging" :height="height" style="border:none;"
         v-else-if="env === '/staging-env'"
+        scrolling="no"
         class="shadow-transition"
         :src="$previewHost + env + '/lk-preview/' + component.name" frameborder="0"></iframe>
       <iframe ref="iframe" :height="height" style="border:none;"
         v-else
+        scrolling="no"
         class="shadow-transition"
         :src="$previewHost + env + '/lk-preview/' + component.name" frameborder="0"></iframe>
       <!-- <div v-show="showToolbar" class="absolute">header</div> -->
@@ -31,7 +34,7 @@
 
         <q-space />
         <q-btn dense flat icon="settings" @click="openPropsSettings" />
-        <q-btn dense flat icon="delete" @click="$emit('remove', component.name, component.order)" />
+        <q-btn dense flat icon="delete" @click="$emit('remove', component.name, component.order), showToolbar = false" />
       </q-bar>
     </div>
 </template>
@@ -142,5 +145,10 @@ iframe {
     background-clip: padding-box; /* for IE9+, Firefox 4+, Opera, Chrome */
 
   width: 98%
+}
+
+.max-height-100 {
+  max-height: 100px !important;
+  overflow: hidden !important;
 }
 </style>
