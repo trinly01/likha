@@ -61,7 +61,7 @@
           </q-input>
         </q-toolbar>
       </div>
-      <q-scroll-area class="inset-shadow" style="height: calc(100% - 50px); margin-top: 50px;">
+      <q-scroll-area class="inset-shadow bg-grey-10" style="height: calc(100% - 50px); margin-top: 50px;">
         <div class="q-pa-md">
           <draggable
             class="dragArea list-group q-gutter-md"
@@ -105,7 +105,7 @@
                     </iframe>
                     <div
                       style="
-                        background-color: rgba(0, 0, 0, 0.6);
+                        background-color: rgba(0, 0, 0, 0.7);
                         backdrop-filter: blur(4px);
                         -webkit-backdrop-filter: blur(4px);
                       "

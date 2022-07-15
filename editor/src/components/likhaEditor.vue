@@ -18,7 +18,10 @@
     <!-- <q-btn dense v-show="minimized" flat icon="crop_square" @click="minimized = false, $emit('restored')" /> -->
     <!-- <q-btn dense flat icon="close" /> -->
   </q-bar>
-  <div v-for="(c, i) in modelValue" :key="'editor' + ( i || '' )" v-show="tab === c.prop && !minimized" style="overflow: auto; max-height: 100%; max-width: 100%;" :style="{ height, width: widthEditor, resize }"
+  <div v-for="(c, i) in modelValue"
+    :key="'editor' + ( i || '' )"
+    v-show="tab === c.prop && !minimized"
+    style="overflow: auto; max-height: 100%; max-width: 100%;" :style="{ height, width: widthEditor, resize }"
    ref="editors"></div>
 </template>
 <script>

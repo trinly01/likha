@@ -16,12 +16,12 @@
         v-else-if="env === '/staging-env'"
         scrolling="no"
         class="shadow-transition"
-        :src="$previewHost + env + '/lk-preview/' + component.name" frameborder="0"></iframe>
+        :src="src" frameborder="0"></iframe>
       <iframe ref="iframe" :height="height" style="border:none;"
         v-else
         scrolling="no"
         class="shadow-transition"
-        :src="$previewHost + env + '/lk-preview/' + component.name" frameborder="0"></iframe>
+        :src="src" frameborder="0"></iframe>
       <!-- <div v-show="showToolbar" class="absolute">header</div> -->
       <q-bar v-show="component.name && (showToolbar || dragging)" dark class="handle bg-dark text-white absolute shadow-10"
         style="width: calc(98% - 300px) !important;"

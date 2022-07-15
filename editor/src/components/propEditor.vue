@@ -1,7 +1,8 @@
 <template>
-  <q-dialog persistent class="z-top" ref="dialogRef" @hide="onDialogHide">
-    <q-layout view="hHh LpR fFf" container class="bg-white">
-        <q-header class="bg-primary">
+  <q-dialog
+    persistent class="z-top" ref="dialogRef" @hide="onDialogHide">
+    <q-layout style="max-height: 500px !important;" view="hHh LpR fFf" container class="bg-white">
+        <q-header class="bg-dark">
           <q-toolbar>
             <!-- <q-btn flat round dense icon="menu" /> -->
             <q-toolbar-title>{{ component.name }} - {{ component.order }}</q-toolbar-title>
@@ -10,7 +11,17 @@
           </q-toolbar>
         </q-header>
 
-        <q-footer class="bg-dark text-white">
+        <q-page-container>
+          <q-page padding class="column bg-dark inset-shadow">
+            <!-- <div>{{ data.props }}</div>
+            <div>{{ component.name }}</div> -->
+            <q-input
+              dark
+             v-for="p in data.props" :key="'prop' + p[0]" :label="p[0]" v-model="p[1].value" :type="(new p[1].type()).constructor.name" />
+          </q-page>
+        </q-page-container>
+
+        <q-footer class="bg-dark text-white shadow-up-24">
           <q-toolbar>
             <q-toolbar-title>
               <!--  -->
@@ -19,13 +30,6 @@
           </q-toolbar>
         </q-footer>
 
-        <q-page-container>
-          <q-page padding class="column">
-            <div>{{ data.props }}</div>
-            <div>{{ component.name }}</div>
-            <q-input v-for="p in data.props" :key="'prop' + p[0]" :label="p[0]" v-model="p[1].value" :type="(new p[1].type()).constructor.name" />
-          </q-page>
-        </q-page-container>
       </q-layout>
   </q-dialog>
 </template>

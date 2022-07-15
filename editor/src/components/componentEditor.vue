@@ -45,7 +45,7 @@
       </span>
     </q-toolbar>
     <div class="row bg-pink" style="height: calc(100vh - 56px); max-height: calc(100vh - 56px);">
-      <splitpanes class="default-theme">
+      <splitpanes class="default-theme bg-dark">
         <pane min-size="20">
           <splitpanes horizontal>
             <pane min-size="20">
@@ -312,6 +312,10 @@ export default defineComponent({
 .splitpanes--horizontal > .splitpanes__splitter {
   border: 0px !important;
   background-color: var(--q-primary) !important;
+}
+
+.splitpanes__pane {
+  background-color: inherit !important;
 }
 
 .shell__status-bar {
