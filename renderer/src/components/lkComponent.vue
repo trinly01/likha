@@ -109,10 +109,10 @@ export default defineComponent({
         name: comp.name,
         template: `
           <div component="${comp.name}">
-            ${comp['template' + Env]}
             <component scoped scopped is="style">
               ${comp['style' + Env]}
             </component>
+            ${comp['template' + Env]}
           </div>
         `,
         props,
