@@ -92,6 +92,7 @@ export default defineComponent({
 
       area = 'quasarComponents' + Env
       const components = {}
+      const directives = {}
       const qComps = (new Function(addReturnIfNeeded(comp[area])))() || []
       qComps.forEach(componentName => {
         // console.log('$q[componentName]', $quasar[componentName])
@@ -101,6 +102,7 @@ export default defineComponent({
       Object.keys($quasar).forEach(key => {
         if (key[0].toLowerCase() === 'q') {
           components[key] = $quasar[key]
+          directives[key] = $quasar[key]
         }
       })
 
@@ -112,6 +114,7 @@ export default defineComponent({
 
       const cmptStructure = {
         components,
+        directives,
         name: comp.name,
         template: `
           <div component="${comp.name}">
