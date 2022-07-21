@@ -17,7 +17,7 @@ const likhaAPI = axios.create({ baseURL: protocol + '//' + hostname + ':1337' + 
 export default boot(({ app, router }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
 
-  app.config.globalProperties.$previewHost = 'http://localhost:9150'
+  app.config.globalProperties.$previewHost = protocol + '//' + hostname + ':9150'
 
   app.config.globalProperties.$axios = axios
   // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
