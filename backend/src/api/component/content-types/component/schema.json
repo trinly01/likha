@@ -109,18 +109,6 @@
       "target": "api::version.version",
       "mappedBy": "component"
     },
-    "quasarComponents": {
-      "type": "richtext",
-      "default": "[]"
-    },
-    "quasarComponentsStaging": {
-      "type": "richtext",
-      "default": "[]"
-    },
-    "quasarComponentsDev": {
-      "type": "richtext",
-      "default": "[]"
-    },
     "releases": {
       "type": "relation",
       "relation": "oneToMany",

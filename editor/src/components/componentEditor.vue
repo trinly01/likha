@@ -276,7 +276,7 @@ export default defineComponent({
           language: getLangByProp(key)
         }))
 
-        this.code1 = getByProps(['template', 'data', 'quasarComponents'])
+        this.code1 = getByProps(['template', 'data'])
         // console.log('this.code1', this.code1)
         this.code2 = getByProps(['methods', 'computed', 'lifeCycleEvents'])
         // console.log('this.code2', this.code2)

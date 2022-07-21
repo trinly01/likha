@@ -51,8 +51,6 @@ export default defineComponent({
       encodeValuesOnly: true
     })
 
-    const $quasar = await import('quasar')
-
     try {
       comp = (await $likhaAPI.get('/components?' + query)).data.data[0].attributes
       // console.log('props.name', $route.path, comp)
@@ -91,31 +89,8 @@ export default defineComponent({
       const lifeCycleEvents = (new Function(addReturnIfNeeded(comp[area])))() || {}
 
       area = 'quasarComponents' + Env
-      const components = {}
-      const directives = {}
-      const qComps = (new Function(addReturnIfNeeded(comp[area])))() || []
-      qComps.forEach(componentName => {
-        // console.log('$q[componentName]', $quasar[componentName])
-        components[componentName] = $quasar[componentName]
-      })
-
-      Object.keys($quasar).forEach(key => {
-        if (key[0].toLowerCase() === 'q') {
-          components[key] = $quasar[key]
-        } else if (!$quasar[key].template && !$quasar[key].render) {
-          directives[key] = $quasar[key]
-        }
-      })
-
-      // console.log('lkComponent.appContext.config.globalProperties.$q', lkComponent.appContext.config.globalProperties.$q)
-
-      // lkComponent.appContext.config.globalProperties.$q.notify = $quasar.Notify
-      // console.log('notify;;;', lkComponent.appContext.config.globalProperties.$q)
-      // lkComponent.appContext.config.globalProperties.$q.Notify = ($quasar.useQuasar()).Notify
 
       const cmptStructure = {
-        components,
-        directives,
         name: comp.name,
         template: `
           <div component="${comp.name}">
