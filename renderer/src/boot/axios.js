@@ -8,7 +8,11 @@ import qs from 'qs'
 // good idea to move this instance creation inside of the
 // "export default () => {}" function below (which runs individually
 // for each client)
-const likhaAPI = axios.create({ baseURL: 'http://localhost:1337/api' })
+const { hostname, protocol } = process.env.CLIENT ? window.location : {
+  hostname: 'localhost',
+  protocol: 'http:'
+}
+const likhaAPI = axios.create({ baseURL: protocol + '//' + hostname + ':1337' + '/api' })
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api

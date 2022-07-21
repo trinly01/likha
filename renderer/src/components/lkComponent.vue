@@ -98,6 +98,12 @@ export default defineComponent({
         components[componentName] = $quasar[componentName]
       })
 
+      Object.keys($quasar).forEach(key => {
+        if (key[0].toLowerCase() === 'q') {
+          components[key] = $quasar[key]
+        }
+      })
+
       // console.log('lkComponent.appContext.config.globalProperties.$q', lkComponent.appContext.config.globalProperties.$q)
 
       // lkComponent.appContext.config.globalProperties.$q.notify = $quasar.Notify
