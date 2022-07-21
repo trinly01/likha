@@ -102,6 +102,7 @@ export default defineComponent({
       Object.keys($quasar).forEach(key => {
         if (key[0].toLowerCase() === 'q') {
           components[key] = $quasar[key]
+        } else if (!$quasar[key].template && !$quasar[key].render) {
           directives[key] = $quasar[key]
         }
       })
