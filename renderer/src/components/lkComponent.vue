@@ -93,12 +93,10 @@ export default defineComponent({
       const cmptStructure = {
         name: comp.name,
         template: `
-          <div component="${comp.name}">
-            <component scoped scopped is="style">
+            <component scoped scopped is="style" component="${comp.name}">
               ${comp['style' + Env]}
             </component>
             ${comp['template' + Env]}
-          </div>
         `,
         props,
         emits,
