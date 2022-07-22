@@ -24,7 +24,7 @@
     "components": {
       "type": "richtext",
       "default": "[]",
-      "required": true
+      "required": false
     },
     "headerComponents": {
       "type": "richtext",
