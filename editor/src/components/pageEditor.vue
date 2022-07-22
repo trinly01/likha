@@ -431,10 +431,6 @@ export default {
       const result = (await this.$likhaAPI.get('/pages?' + query)).data.data[0]
       const page = { id: result.id, ...result.attributes }
 
-      const pageAreas = { ...this.page, ...page }
-
-      console.log('pageAreas', pageAreas)
-
       const layoutParts = [
         'header',
         'left',
@@ -445,9 +441,15 @@ export default {
       layoutParts.forEach(part => {
         let partComponents = 'components'
         if (part) partComponents = part + 'Components'
-        this.page[partComponents] = pageAreas[partComponents] || []
-        this.page[partComponents] = (new Function('return ' + pageAreas[partComponents]))().sort((a, b) => a.order - b.order)
+        // this.page[partComponents] = pageAreas[partComponents] || []
+        page[partComponents] = (new Function('return ' + page[partComponents]))().sort((a, b) => a.order - b.order)
       })
+
+      this.page = page
+
+      // const pageAreas = { ...this.page, ...page }
+
+      // console.log('pageAreas', pageAreas)
       // this.pageComponents = (new Function('return ' + page.components))().sort((a, b) => a.order - b.order)
 
       let orig = JSON.stringify(this.page.headerComponents)
