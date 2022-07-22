@@ -62,7 +62,7 @@ export default boot(async ({ app, router }) => {
       components[name] = defineComponent({
         name,
         data: () => ({
-          components: orderBy((new Function('return ' + p.attributes[partComponents]))(), ['index'], ['asc']),
+          components: orderBy((new Function('return ' + p.attributes[partComponents]))() || [], ['index'], ['asc']),
           env: ''
         }),
         created () {
