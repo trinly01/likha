@@ -24,7 +24,7 @@ export default boot(async ({ app, router }) => {
   }
   app.config.globalProperties.$global = reactive((new Function(addReturnIfNeeded(variables)))())
 
-  console.log('variables', variables)
+  // console.log('variables', variables)
 
   const pages = (await $likhaAPI.get('/pages?' + query)).data.data
   pages.map((p) => {

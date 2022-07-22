@@ -354,7 +354,7 @@ export default {
       this.loading = false
     },
     async changedComponents (change, keyComponents) {
-      console.log('changes', keyComponents, change)
+      // console.log('changes', keyComponents, change)
       if (change.moved) {
         const i = this.page[keyComponents].findIndex(c => {
           return c.name !== change.moved.element.name &&
