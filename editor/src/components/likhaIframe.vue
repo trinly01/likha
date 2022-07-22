@@ -7,6 +7,19 @@
       @mouseover="showToolbar = true"
       @mouseleave="showToolbar = false"
     >
+      <q-bar v-show="component.name && (showToolbar || dragging)" dark
+        class="handle bg-dark text-white shadow-10 full-width"
+      >
+        <!-- <q-icon name="laptop_chromebook" /> -->
+        <q-btn dense flat icon="settings" />
+        <div>
+          {{ component.name }} {{component.order}}
+        </div>
+
+        <q-space />
+        <q-btn dense flat icon="settings" @click="openPropsSettings" />
+        <q-btn dense flat icon="delete" @click="$emit('remove', component.name, component.order), showToolbar = false" />
+      </q-bar>
       <iframe ref="iframeDev" :height="height" style="border:none;"
         v-if="env === '/dev-env'"
         scrolling="no"
@@ -23,19 +36,6 @@
         class="shadow-transition"
         :src="src" frameborder="0"></iframe>
       <!-- <div v-show="showToolbar" class="absolute">header</div> -->
-      <q-bar v-show="component.name && (showToolbar || dragging)" dark class="handle bg-dark text-white absolute shadow-10"
-        style="width: calc(98% - 300px) !important;"
-      >
-        <!-- <q-icon name="laptop_chromebook" /> -->
-        <q-btn dense flat icon="settings" />
-        <div>
-          {{ component.name }} {{component.order}}
-        </div>
-
-        <q-space />
-        <q-btn dense flat icon="settings" @click="openPropsSettings" />
-        <q-btn dense flat icon="delete" @click="$emit('remove', component.name, component.order), showToolbar = false" />
-      </q-bar>
     </div>
 </template>
 

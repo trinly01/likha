@@ -36,16 +36,155 @@
         <q-input v-model="page.path" readonly dense dark label="path" class="q-ma-sm" />
         <q-space />
         <q-tabs align="right" dense v-model="env">
-          <q-tab name="" label="prod" />
-          <q-tab name="/staging-env" label="staging" />
           <q-tab name="/dev-env" label="dev" />
+          <q-tab name="/staging-env" label="staging" />
+          <q-tab name="" label="prod" />
         </q-tabs>
       </div>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" side="left" bordered>
-      <!-- drawer content -->
-    </q-drawer>
+    <q-page-container>
+      <div class="column">
+        <!-- workarea -->
+        <div class="column" >
+          <!-- HEADER -->
+          <draggable
+            class="dragArea list-group items-center"
+            :class="{
+              'q-gutter-md q-ma-sm bg-cyan-2 q-pa-sm min-size': dragging
+            }"
+            ghost-class="ghost"
+            handle=".handle"
+            v-if="page.headerComponents"
+            v-model="page.headerComponents"
+            item-key="name"
+            :group="{ name: 'pageComponents', pull: true, put: true }"
+            @start="dragging = true" @end="dragging = false" :move="checkMove"
+            @change="change => changedComponents(change, 'headerComponents')">
+            <template #item="{ element, index }">
+              <likha-iframe
+                v-model="page.headerComponents[index]"
+                class="list-group-item col"
+                :class="{
+                  'max-height-100': dragging
+                }"
+                :env="env" :component="element" :dragging="dragging"
+                @remove="removeComponent(element.name, index, 'headerComponents')" />
+            </template>
+          </draggable>
+          <!-- HEADER END -->
+        </div>
+        <div class="row">
+          <div class="left-drawer column" >
+            <!-- left drawer -->
+            <draggable
+              class="dragArea list-group items-center"
+              :class="{
+                'q-gutter-md q-ma-sm bg-purple-2 q-pa-sm min-size': dragging
+              }"
+              ghost-class="ghost"
+              handle=".handle"
+              v-model="page.leftComponents"
+              item-key="name"
+              :group="{ name: 'pageComponents', pull: true, put: true }"
+              @start="dragging = true" @end="dragging = false" :move="checkMove"
+              @change="change => changedComponents(change, 'leftComponents')">
+              <template #item="{ element, index }">
+                <likha-iframe
+                  v-model="page.leftComponents[index]"
+                  class="list-group-item col"
+                  :class="{
+                    'max-height-100': dragging
+                  }"
+                  :env="env" :component="element" :dragging="dragging"
+                  @remove="removeComponent(element.name, index, 'leftComponents')" />
+              </template>
+            </draggable>
+            <!-- left drawer END -->
+          </div>
+          <div class="page-container col column text-center">
+            <!-- PAGE CONTAINER -->
+            <draggable
+              class="dragArea list-group items-center"
+              :class="{
+                'q-gutter-md q-ma-sm bg-green-2 q-pa-sm min-size': dragging
+              }"
+              ghost-class="ghost"
+              handle=".handle"
+              v-model="page.components"
+              item-key="name"
+              :group="{ name: 'pageComponents', pull: true, put: true }"
+              @start="dragging = true" @end="dragging = false" :move="checkMove"
+              @change="change => changedComponents(change, 'components')">
+              <template #item="{ element, index }">
+                <likha-iframe
+                  v-model="page.components[index]"
+                  class="list-group-item col"
+                  :class="{
+                    'max-height-100': dragging
+                  }"
+                  :env="env" :component="element" :dragging="dragging"
+                  @remove="removeComponent(element.name, index, 'components')" />
+              </template>
+            </draggable>
+            <!-- PAGE CONTAINER END -->
+          </div>
+          <div class="column" >
+            <!-- RIGHT drawer -->
+            <draggable
+              class="dragArea list-group items-center"
+              :class="{
+                'q-gutter-md q-ma-sm bg-purple-2 q-pa-sm min-size': dragging
+              }"
+              ghost-class="ghost"
+              handle=".handle"
+              v-model="page.rightComponents"
+              item-key="name"
+              :group="{ name: 'pageComponents', pull: true, put: true }"
+              @start="dragging = true" @end="dragging = false" :move="checkMove"
+              @change="change => changedComponents(change, 'rightComponents')">
+              <template #item="{ element, index }">
+                <likha-iframe
+                  v-model="page.rightComponents[index]"
+                  class="list-group-item col"
+                  :class="{
+                    'max-height-100': dragging
+                  }"
+                  :env="env" :component="element" :dragging="dragging"
+                  @remove="removeComponent(element.name, index, 'rightComponents')" />
+              </template>
+            </draggable>
+            <!-- RIGHT drawer END -->
+          </div>
+        </div>
+        <div class="column" >
+          <!-- FOOTER -->
+          <draggable
+            class="dragArea list-group items-center"
+            :class="{
+              'q-gutter-md q-ma-sm bg-cyan-2 q-pa-sm min-size': dragging
+            }"
+            ghost-class="ghost"
+            handle=".handle"
+            v-model="page.footerComponents"
+            item-key="name"
+            :group="{ name: 'pageComponents', pull: true, put: true }"
+            @start="dragging = true" @end="dragging = false" :move="checkMove"
+            @change="change => changedComponents(change, 'footerComponents')">
+            <template #item="{ element, index }">
+              <likha-iframe
+                v-model="page.footerComponents[index]"
+                class="list-group-item col"
+                :class="{
+                  'max-height-100': dragging
+                }"
+                :env="env" :component="element" :dragging="dragging" @remove="removeComponent(element.name, index, 'footerComponents')" />
+            </template>
+          </draggable>
+          <!-- FOOTER END -->
+        </div>
+      </div>
+    </q-page-container>
 
     <q-drawer show-if-above v-model="rightDrawerOpen" side="right" class="column col">
       <div class="absolute-top" style="height: 50px;">
@@ -122,45 +261,6 @@
       </q-scroll-area>
     </q-drawer>
 
-    <q-page-container>
-      <div class="column">
-        <!-- <likha-iframe v-for="comp in page.components" :key="comp.name" :component="comp" /> -->
-        <draggable
-          class="dragArea list-group column items-center"
-          :class="{
-            'q-gutter-md q-ma-sm bg-green-2 q-pa-sm min-height': dragging
-          }"
-          ghost-class="ghost"
-          handle=".handle"
-          v-model="page.components"
-          item-key="name"
-          :group="{ name: 'pageComponents', pull: true, put: true }"
-          @start="dragging = true" @end="dragging = false" :move="checkMove"
-          @change="changedComponents">
-          <template #item="{ element, index }">
-            <likha-iframe
-              v-model="page.components[index]"
-              class="list-group-item col"
-              :class="{
-                'max-height-100': dragging
-              }"
-              :env="env" :component="element" :dragging="dragging" @remove="removeComponent(element.name, index)" />
-          </template>
-        </draggable>
-      </div>
-    </q-page-container>
-
-    <!-- <q-footer elevated class="bg-grey-8 text-white">
-      <q-toolbar>
-        <q-toolbar-title>
-          <q-avatar>
-            <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg">
-          </q-avatar>
-          <div>Title</div>
-        </q-toolbar-title>
-      </q-toolbar>
-    </q-footer> -->
-
   </q-layout>
 </template>
 
@@ -185,13 +285,17 @@ export default {
   computed: {
     hasChanges () {
       // console.log('orig', this.page.origComponents)
-      const changes = JSON.stringify(this.page.components)
+      let changes = JSON.stringify(this.page.headerComponents)
+      changes += JSON.stringify(this.page.leftComponents)
+      changes += JSON.stringify(this.page.components)
+      changes += JSON.stringify(this.page.rightComponents)
+      changes += JSON.stringify(this.page.footerComponents)
       // console.log('change []', this.page.origComponents)
       return this.page.origComponents !== changes
     }
   },
   methods: {
-    removeComponent (name, index) {
+    removeComponent (name, index, keyComponents) {
       this.$q.dialog({
         title: 'Remove Component',
         message: `Would you like remove <${name} /> ?`,
@@ -199,8 +303,8 @@ export default {
         cancel: true,
         persistent: true
       }).onOk(() => {
-        this.page.components.splice(index, 1)
-        this.page.components = this.page.components.map((c, i) => ({ ...c, order: i }))
+        this.page[keyComponents].splice(index, 1)
+        this.page[keyComponents] = this.page[keyComponents].map((c, i) => ({ ...c, order: i }))
       }).onOk(() => {
         // console.log('>>>> second OK catcher')
       }).onCancel(() => {
@@ -249,33 +353,41 @@ export default {
       this.debounce()
       this.loading = false
     },
-    async changedComponents (change) {
-      // console.log('changes', change)
+    async changedComponents (change, keyComponents) {
+      console.log('changes', keyComponents, change)
       if (change.moved) {
-        const i = this.page.components.findIndex(c => {
+        const i = this.page[keyComponents].findIndex(c => {
           return c.name !== change.moved.element.name &&
           c.order === change.moved.newIndex
         })
-        this.page.components[i].order = i
+        this.page[keyComponents][i].order = i
       }
       if (change.added) {
         // console.log('element', change.added.element)
-        const { name, props } = this.clonedComponent
 
-        const newArr = [
-          {
-            name,
-            props,
-            order: change.added.newIndex
-          }, ...this.page.components
-        ]
-          .filter(c => c.name)
-          .sort((a, b) => a.order - b.order)
+        if (this.clonedComponent) {
+          const { name, props } = this.clonedComponent
+
+          const newArr = [
+            {
+              name,
+              props,
+              order: change.added.newIndex
+            }, ...this.page[keyComponents]
+          ]
+            .filter(c => c.name)
+            .sort((a, b) => a.order - b.order)
+            .map((c, i) => ({ ...c, order: i }))
+
+          this.page[keyComponents] = newArr
+
+          delete this.clonedComponent
+
+          return
+        }
+
+        this.page[keyComponents] = this.page[keyComponents]
           .map((c, i) => ({ ...c, order: i }))
-
-        // console.log('newArr', newArr)
-
-        this.page.components = newArr
 
         // this.page.components
       }
@@ -286,13 +398,13 @@ export default {
       // console.log('Future index: ' + e.draggedContext.futureIndex)
     },
     async getPage (name) {
-      this.page = {
-        name: '',
-        id: -1,
-        path: '',
-        components: [],
-        origComponents: ''
-      }
+      // this.page = {
+      //   name: '',
+      //   id: -1,
+      //   path: '',
+      //   components: [],
+      //   origComponents: ''
+      // }
       this.loading = true
       const filters = {}
       if (name) {
@@ -318,10 +430,31 @@ export default {
       })
       const result = (await this.$likhaAPI.get('/pages?' + query)).data.data[0]
       const page = { id: result.id, ...result.attributes }
-      this.page = page
+
+      this.page = { ...this.page, ...page }
+
+      const layoutParts = [
+        'header',
+        'left',
+        '',
+        'right',
+        'footer'
+      ]
+      layoutParts.forEach(part => {
+        let partComponents = 'components'
+        if (part) partComponents = part + 'Components'
+        this.page[partComponents] = this.page[partComponents] || []
+      })
       // this.pageComponents = (new Function('return ' + page.components))().sort((a, b) => a.order - b.order)
       this.page.components = (new Function('return ' + page.components))().sort((a, b) => a.order - b.order)
-      this.page.origComponents = JSON.stringify(this.page.components)
+
+      let orig = JSON.stringify(this.page.headerComponents)
+      orig += JSON.stringify(this.page.leftComponents)
+      orig += JSON.stringify(this.page.components)
+      orig += JSON.stringify(this.page.rightComponents)
+      orig += JSON.stringify(this.page.footerComponents)
+
+      this.page.origComponents = orig
       // console.log('getPageComponents', this.page)
       this.debounce()
       this.loading = false
@@ -370,17 +503,42 @@ export default {
       this.save()
     },
     async save () {
+      const headerComponents = this.$JSON5.stringify(this.page.headerComponents, {
+        space: 2
+      })
+      const leftComponents = this.$JSON5.stringify(this.page.leftComponents, {
+        space: 2
+      })
       const components = this.$JSON5.stringify(this.page.components, {
         space: 2
       })
+      const rightComponents = this.$JSON5.stringify(this.page.rightComponents, {
+        space: 2
+      })
+      const footerComponents = this.$JSON5.stringify(this.page.footerComponents, {
+        space: 2
+      })
       await this.$likhaAPI.put('/pages/' + this.page.id, {
-        data: { components }
+        data: {
+          headerComponents,
+          leftComponents,
+          components,
+          rightComponents,
+          footerComponents
+        }
       })
 
       // console.log('savedPage', savedPage)
 
-      this.page.components = (new Function('return ' + components))().sort((a, b) => a.order - b.order)
-      this.page.origComponents = JSON.stringify(this.page.components)
+      // this.page.components = (new Function('return ' + components))().sort((a, b) => a.order - b.order)
+
+      let orig = JSON.stringify(this.page.headerComponents)
+      orig += JSON.stringify(this.page.leftComponents)
+      orig += JSON.stringify(this.page.components)
+      orig += JSON.stringify(this.page.rightComponents)
+      orig += JSON.stringify(this.page.footerComponents)
+
+      this.page.origComponents = orig
     }
   },
   data () {
@@ -397,13 +555,17 @@ export default {
         id: -1,
         path: '',
         components: [],
+        leftComponents: [],
+        rightComponents: [],
+        headerComponents: [],
+        footerComponents: [],
         origComponents: ''
       },
       pageComponents: [],
       pages: [],
       dragging: false,
       searchText: '',
-      env: '',
+      env: '/dev-env',
       components: []
     }
   },
@@ -432,8 +594,9 @@ export default {
   background: #c8ebfb !important;
 }
 
-.min-height {
+.min-size {
   min-height: 100px !important;
+  min-width: 100px !important;
 }
 
 .max-height-100 {

@@ -1,6 +1,6 @@
 /* eslint-disable no-new-func */
 import { boot } from 'quasar/wrappers'
-import { defineComponent } from 'vue'
+import { defineComponent, reactive } from 'vue'
 import { orderBy } from 'lodash'
 
 // "async" is optional;
@@ -14,16 +14,72 @@ export default boot(async ({ app, router }) => {
   }, {
     encodeValuesOnly: true
   })
+  const { variables } = (await $likhaAPI.get('/global-property')).data.data.attributes
+
+  const addReturnIfNeeded = str => {
+    if (typeof str !== 'string') return 'return ' + str
+    const firstToken = str.split(/\b\s+/)[0]
+    if (firstToken.includes('return')) return str
+    return 'return ' + str
+  }
+  app.config.globalProperties.$global = reactive((new Function(addReturnIfNeeded(variables)))())
+
+  console.log('variables', variables)
+
   const pages = (await $likhaAPI.get('/pages?' + query)).data.data
   pages.map((p) => {
-    const { name, path, components } = p.attributes
+    const { name, path, template } = p.attributes
+
+    // const lkPageComponents = defineComponent({
+    //   name: 'lkPageComponents',
+    //   data: () => ({
+    //     components: orderBy((new Function('return ' + components))(), ['index'], ['asc']),
+    //     env: ''
+    //   }),
+    //   created () {
+    //     this.env = this.$route.path.split('/')[1].split('-')[0]
+    //     this.env = this.env.charAt(0).toUpperCase() + this.env.slice(1)
+    //   },
+    //   template: `
+    //     <lk-component  v-for="(c, i) in components" :key="c.name+'-'+i" :name="c.name" :class="c.class" :props="{ ...c['props' + env] }" />
+    //   `
+    // })
+
+    const components = {}
+    const layoutParts = [
+      'header',
+      'left',
+      '',
+      'right',
+      'footer'
+    ]
+
+    layoutParts.forEach(part => {
+      const name = 'lkPage' + part.charAt(0).toUpperCase() + part.slice(1) + 'Components'
+      let partComponents = 'components'
+      if (part) partComponents = part + 'Components'
+      // console.log('nnn', name, partComponents, p.attributes[partComponents])
+      components[name] = defineComponent({
+        name,
+        data: () => ({
+          components: orderBy((new Function('return ' + p.attributes[partComponents]))(), ['index'], ['asc']),
+          env: ''
+        }),
+        created () {
+          this.env = this.$route.path.split('/')[1].split('-')[0]
+          this.env = this.env.charAt(0).toUpperCase() + this.env.slice(1)
+        },
+        template: `
+          <lk-component  v-for="(c, i) in components" :key="c.name+'-'+i" :name="c.name" :class="c.class" :props="{ ...c['props' + env] }" />
+        `
+      })
+    })
+
+    // console.log('components', components)
 
     const component = defineComponent({
+      components,
       name: 'lk-' + name + '-page',
-      data: () => ({
-        components: orderBy((new Function('return ' + components))(), ['index'], ['asc']),
-        env: ''
-      }),
       created () {
         // console.log('page components', this.components)
         this.env = this.$route.path.split('/')[1].split('-')[0]
@@ -32,11 +88,7 @@ export default boot(async ({ app, router }) => {
         //   console.log('c', this.env, c, c['props' + this.env])
         // }
       },
-      template: `
-        <div>
-          <lk-component  v-for="(c, i) in components" :key="c.name+'-'+i" :name="c.name" :class="c.class" :props="{ ...c['props' + env] }" />
-        </div>
-      `
+      template: template || '<lk-page-components />'
     })
 
     const r = {
