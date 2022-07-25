@@ -607,7 +607,7 @@ export default {
       })
       await this.$likhaAPI.put('/pages/' + this.page.id, {
         data: {
-          template: this.editor.model.getValue(),
+          template: this.editor?.model.getValue() || this.page.template,
           headerComponents,
           leftComponents,
           components,
@@ -628,7 +628,7 @@ export default {
 
       this.page.origComponents = orig
 
-      this.page.template = this.editor.model.getValue()
+      this.page.template = this.editor?.model.getValue() || this.page.template
 
       this.showPageTemplate = false
     }
