@@ -1,6 +1,52 @@
 <template>
-  <q-layout view="hHr LpR lfr">
+  <q-dialog v-model="showPageTemplate" full-width>
+    <q-layout view="Lhh lpR fff" container class="bg-white">
 
+      <!-- <q-drawer bordered :width="200" :breakpoint="600" class="bg-grey-3 q-pa-sm">
+        <div v-for="n in 50" :key="n">Drawer {{ n }} / 50</div>
+      </q-drawer>
+
+      <q-drawer side="right" bordered :width="200" :breakpoint="300" class="bg-grey-3 q-pa-sm">
+        <div v-for="n in 50" :key="n">Drawer {{ n }} / 50</div>
+      </q-drawer> -->
+
+      <q-page-container>
+        <q-page class="bg-dark row" style="overflow: hidden; max-height: calc(100vh - 150px) !important;">
+          <div class="col">
+            <div ref="editor" class="fit"></div>
+          </div>
+        </q-page>
+      </q-page-container>
+
+      <q-header class="bg-secondary shadow-15">
+        <q-toolbar>
+          <q-btn flat round dense icon="dashboard" />
+          <q-toolbar-title>
+            Page Layout
+            <q-btn color="info" flat dense round icon="help_outline" @click="openBuilder"/>
+          </q-toolbar-title>
+          <q-space />
+          <!-- <q-btn flat round dense icon="menu" /> -->
+          <q-btn flat v-close-popup round dense icon="close" />
+        </q-toolbar>
+      </q-header>
+
+      <q-footer class="bg-dark text-white shadow-up-10">
+        <q-toolbar>
+          <!-- <q-toolbar-title>Footer</q-toolbar-title> -->
+          <div class="q-gutter-md">
+            <q-chip color="green" text-color="white" label="<lk-page-components />" />
+            <q-chip color="purple" text-color="white" label="<lk-page-[ left / right ]-components />" />
+            <q-chip color="cyan" text-color="white" label="<lk-page-[ header / footer ]-components />" />
+          </div>
+          <q-space />
+          <q-btn :disabled="!templateHasChanges" color="secondary" icon="save" label="save" @click="save" />
+        </q-toolbar>
+      </q-footer>
+    </q-layout>
+  </q-dialog>
+
+  <q-layout view="hHr LpR lfr">
     <q-header elevated class="bg-dark text-white" height-hint="98">
       <q-toolbar class="shadow-6">
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
@@ -35,6 +81,7 @@
       <div class="row">
         <q-input v-model="page.path" readonly dense dark label="path" class="q-ma-sm" />
         <q-space />
+        <q-btn icon="dashboard" label="Page Layout" @click="openTemplateEditor" class="q-pr-md" flat color="secondary" dense />
         <q-tabs align="right" dense v-model="env">
           <q-tab name="/dev-env" label="dev" />
           <q-tab name="/staging-env" label="staging" />
@@ -272,6 +319,8 @@ import { ref } from 'vue'
 export default {
   beforeUnmount () {
     document.removeEventListener('keydown', this.ctrlSave)
+
+    this.editor.dispose()
   },
   mounted () {
     document.addEventListener('keydown', this.ctrlSave)
@@ -295,6 +344,10 @@ export default {
     }
   },
   methods: {
+    openBuilder () {
+      // https://quasar.dev/layout-builder
+      window.open('https://quasar.dev/layout-builder', '_blank').focus()
+    },
     removeComponent (name, index, keyComponents) {
       this.$q.dialog({
         title: 'Remove Component',
@@ -396,6 +449,36 @@ export default {
       // console.log(e.draggedContext)
       e.draggedContext.element.order = e.draggedContext.futureIndex
       // console.log('Future index: ' + e.draggedContext.futureIndex)
+    },
+    async openTemplateEditor () {
+      this.showPageTemplate = true
+      if (this.editor) this.editor.dispose()
+
+      setTimeout(() => {
+        this.editor = this.$monaco.editor.create(this.$refs.editor, {
+          value: this.page.template,
+          language: 'html',
+          automaticLayout: true,
+          scrollBeyondLastLine: false,
+          theme: 'vs-dark'
+        })
+
+        this.editor.onKeyDown((event) => {
+          const { keyCode, ctrlKey, metaKey } = event
+          // console.log('pressing', keyCode)
+          if ((keyCode === 49) && (metaKey || ctrlKey)) {
+            event.preventDefault()
+            if (this.codeHasChanges) this.save()
+          }
+        })
+
+        this.editor.model = this.editor.getModel()
+
+        this.editor.model.onDidChangeContent(() => {
+          this.templateHasChanges = this.editor.model.getValue() !== this.page.template
+          // console.log('content has Change', this.codeHasChanges, this['monacoEditor-' + code.prop].model.getValue(), this.codes[i].value)
+        })
+      }, 300)
     },
     async getPage (name) {
       // this.page = {
@@ -524,6 +607,7 @@ export default {
       })
       await this.$likhaAPI.put('/pages/' + this.page.id, {
         data: {
+          template: this.editor.model.getValue(),
           headerComponents,
           leftComponents,
           components,
@@ -543,10 +627,16 @@ export default {
       orig += JSON.stringify(this.page.footerComponents)
 
       this.page.origComponents = orig
+
+      this.page.template = this.editor.model.getValue()
+
+      this.showPageTemplate = false
     }
   },
   data () {
     return {
+      showPageTemplate: false,
+      templateHasChanges: false,
       code: `
         // console.log('html', this);
         const html = this.document.querySelector('html');

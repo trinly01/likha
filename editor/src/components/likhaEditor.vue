@@ -30,32 +30,32 @@ import { defineComponent, nextTick } from 'vue'
 
 // import onResize from 'resize-event'
 
-import * as monaco from 'monaco-editor'
+// import * as monaco from 'monaco-editor'
 
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
-import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
-import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
-import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
-import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
-// import DarkPlus from 'components/Dark+theme.json'
+// import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
+// import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
+// import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
+// import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
+// import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
+// // import DarkPlus from 'components/Dark+theme.json'
 
-self.MonacoEnvironment = {
-  getWorker (_, label) {
-    if (label === 'json') {
-      return new jsonWorker()
-    }
-    if (label === 'css' || label === 'scss' || label === 'less') {
-      return new cssWorker()
-    }
-    if (label === 'html' || label === 'handlebars' || label === 'razor') {
-      return new htmlWorker()
-    }
-    if (label === 'typescript' || label === 'javascript') {
-      return new tsWorker()
-    }
-    return new editorWorker()
-  }
-}
+// self.MonacoEnvironment = {
+//   getWorker (_, label) {
+//     if (label === 'json') {
+//       return new jsonWorker()
+//     }
+//     if (label === 'css' || label === 'scss' || label === 'less') {
+//       return new cssWorker()
+//     }
+//     if (label === 'html' || label === 'handlebars' || label === 'razor') {
+//       return new htmlWorker()
+//     }
+//     if (label === 'typescript' || label === 'javascript') {
+//       return new tsWorker()
+//     }
+//     return new editorWorker()
+//   }
+// }
 
 export default defineComponent({
   emits: ['saved'],
@@ -145,7 +145,7 @@ export default defineComponent({
     // monaco.editor.defineTheme('DarkPlus', DarkPlus)
 
     for (const [i, code] of this.modelValue.entries()) {
-      this['monacoEditor-' + code.prop] = monaco.editor.create(this.$refs.editors[i], {
+      this['monacoEditor-' + code.prop] = this.$monaco.editor.create(this.$refs.editors[i], {
         value: code.value,
         language: code.language,
         automaticLayout: true,
