@@ -39,7 +39,7 @@
 
       <!-- <q-btn flat round dense icon="whatshot" /> -->
       <span class="q-gutter-sm">
-        <q-btn disabled icon="history" label="History" />
+        <q-btn icon="history" label="History" @click="showHistory" />
         <q-btn icon="approval" label="stage" @click="stage" :loading="loading" />
         <q-btn icon="precision_manufacturing" label="Publish" @click="publish" />
       </span>
@@ -119,6 +119,26 @@ export default defineComponent({
     env: '/dev-env'
   }),
   methods: {
+    async showHistory () {
+      this.$q.dialog({
+        component: (await import('components/lkHistory.vue')).default,
+
+        // props forwarded to your custom component
+        componentProps: {
+          component: this.component,
+          codes: [...this.code1, ...this.code2, ...this.code3]
+          // ...more..props...
+        }
+      }).onOk((data) => {
+        this.env = '/staging-env'
+        this.$q.notify({
+          position: 'top-right',
+          color: 'positive',
+          icon: 'verified',
+          message: 'Deployed to Staging'
+        })
+      })
+    },
     async publish () {
       this.env = '/staging-env'
       this.$q.dialog({
@@ -307,10 +327,12 @@ export default defineComponent({
 .splitpanes--vertical > .splitpanes__splitter {
   border: 0px !important;
   background-color: var(--q-primary) !important;
+  width: 4px !important;
 }
 
 .splitpanes--horizontal > .splitpanes__splitter {
   border: 0px !important;
+  height: 4px !important;
   background-color: var(--q-primary) !important;
 }
 

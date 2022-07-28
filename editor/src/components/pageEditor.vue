@@ -320,6 +320,7 @@ export default {
   beforeUnmount () {
     document.removeEventListener('keydown', this.ctrlSave)
 
+    this.editor.model.dispose()
     this.editor.dispose()
   },
   mounted () {

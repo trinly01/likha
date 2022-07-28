@@ -131,6 +131,7 @@ export default defineComponent({
     // console.log('parent')
     for (const code of this.modelValue) {
       if (this['monacoEditor-' + code.prop]) {
+        this['monacoEditor-' + code.prop].model.dispose()
         this['monacoEditor-' + code.prop].dispose()
       }
     }
@@ -150,7 +151,9 @@ export default defineComponent({
         language: code.language,
         automaticLayout: true,
         // scrollBeyondLastLine: false,
-        theme: 'vs-dark'
+        theme: 'vs-dark',
+        insertSpaces: true,
+        tabSize: 2
       })
 
       this['monacoEditor-' + code.prop].model = this['monacoEditor-' + code.prop].getModel()
