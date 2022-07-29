@@ -14,7 +14,14 @@ export default boot(async ({ app, router }) => {
   }, {
     encodeValuesOnly: true
   })
-  const { variables } = (await $likhaAPI.get('/global-property')).data.data.attributes
+
+  let variables = '{}'
+
+  try {
+    variables = (await $likhaAPI.get('/global-property')).data.data.attributes.variables
+  } catch (e) {
+    console.log('No Global Variables', e)
+  }
 
   const addReturnIfNeeded = str => {
     if (typeof str !== 'string') return 'return ' + str
@@ -22,8 +29,8 @@ export default boot(async ({ app, router }) => {
     if (firstToken.includes('return')) return str
     return 'return ' + str
   }
-  app.config.globalProperties.$global = reactive((new Function(addReturnIfNeeded(variables)))())
 
+  app.config.globalProperties.$global = reactive((new Function(addReturnIfNeeded(variables)))())
   // console.log('variables', variables)
 
   const pages = (await $likhaAPI.get('/pages?' + query)).data.data
