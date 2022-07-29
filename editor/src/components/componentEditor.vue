@@ -39,9 +39,9 @@
 
       <!-- <q-btn flat round dense icon="whatshot" /> -->
       <span class="q-gutter-sm">
-        <q-btn icon="history" label="History" @click="showHistory" />
-        <q-btn icon="approval" label="stage" @click="stage" :loading="loading" />
-        <q-btn icon="precision_manufacturing" label="Publish" @click="publish" />
+        <!-- <q-btn icon="history" label="History" @click="showHistory" /> -->
+        <q-btn icon="approval" label="stage" @click="showHistory" :loading="loading" />
+        <q-btn icon="precision_manufacturing" label="Publish" @click="publish" v-show="env === '/staging-env'" />
       </span>
     </q-toolbar>
     <div class="row bg-pink" style="height: calc(100vh - 56px); max-height: calc(100vh - 56px);">

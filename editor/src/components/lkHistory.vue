@@ -8,45 +8,68 @@
           <q-input dark v-model="data.description" type="textarea" label="Description" autogrow />
         </q-page> -->
         <q-page class="bg-dark row" style="overflow: hidden; max-height: calc(100vh - 150px) !important;">
-          <div class="shadow-24 bg-dark" style="width: 300px; z-index: 5 !important;">
+          <div class="shadow-24 bg-dark column" style="width: 300px; z-index: 5 !important;">
             <q-input dark dense standout
               v-model="searchText"
-              class="col q-mx-md q-my-sm" input-class="text-left">
+              class="q-mx-md q-my-sm" input-class="text-left">
                 <template v-slot:append>
                   <q-icon v-if="searchText === ''" name="search" />
                   <q-icon v-else name="clear" class="cursor-pointer" @click="searchText = ''" />
                 </template>
             </q-input>
-            <q-list dark separator style="max-width: 318px">
-              <!-- {{ versions }} -->
-              <q-item clickable v-ripple
-                v-for="v in versions" :key="'commit' + v.id"
-                @click="selectedVersion = v.id"
-                :class="{
-                  'bg-blue-grey-10': selectedVersion === v.id
-                }"
-              >
-                <q-item-section>
-                  <q-item-label>{{ v.summary }}</q-item-label>
-                  <q-item-label caption>
-                    <q-avatar size="24px" color="secondary">TB</q-avatar>
-                    <span
-                      :class="{
-                        'text-blue-grey': selectedVersion !== v.id,
-                        'text-white': selectedVersion === v.id
-                      }"
-                    >
-                      TB • {{ v.createdAt }}
-                    </span>
-                  </q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
+
+            <div class="col">
+              <q-list dark separator>
+                <!-- {{ versions }} -->
+                <q-item clickable v-ripple
+                  v-for="v in versions" :key="'commit' + v.id"
+                  @click="selectedVersion = v.id"
+                  :class="{
+                    'bg-blue-grey-10': selectedVersion === v.id
+                  }"
+                >
+                  <q-item-section>
+                    <q-item-label>{{ v.summary }}</q-item-label>
+                    <q-item-label caption>
+                      <q-avatar size="24px" color="secondary">TB</q-avatar>
+                      <span
+                        :class="{
+                          'text-blue-grey': selectedVersion !== v.id,
+                          'text-white': selectedVersion === v.id
+                        }"
+                      >
+                        TB • {{ v.createdAt }}
+                      </span>
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </div>
+
+            <q-card
+              v-show="!versions.length || (versions.length && versions[0].id === selectedVersion)"
+              class="bg-dark text-white absolute-bottom shadow-up-1"
+              style="max-width: 300px"
+            >
+              <q-card-section>
+                <div class="text-h6">Staging Deployment</div>
+              </q-card-section>
+
+              <q-card-section class="q-pt-none">
+                <q-input dark v-model="data.summary" type="text" label="Summary" />
+                <q-input dark v-model="data.description" type="textarea" label="Description" autogrow input-style="min-height: 64px;" />
+              </q-card-section>
+
+              <q-card-actions align="right" class="text-primary">
+                <q-btn flat label="Cancel" v-close-popup @click="onDialogCancel" />
+                <q-btn :disabled="!data.summary || (!codeChanges.length && versions.length)" flat label="Commit" @click="save" />
+              </q-card-actions>
+            </q-card>
           </div>
 
           <div class="col column text-white">
             <div class="shadow-10 row" style="z-index: 4 !important;">
-              <q-list dark separator style="max-width: 318px">
+              <q-list dark separator>
                 <q-item v-if="currentVersion.summary">
                   <q-item-section>
                     <q-item-label> {{ currentVersion.summary }} </q-item-label>
@@ -63,15 +86,16 @@
               <div class="q-pa-sm">
                 <q-btn @click="split = !split"
                   :color="split ? 'blue-grey-10': 'dark'"
-                  :text-color="split ? 'secondary' : ''" round icon="compare"
+                  :text-color="split ? 'secondary' : 'grey'" round
+                  :icon="split ? 'compare' : 'difference'"
                 />
               </div>
             </div>
             <div class="row col">
               <div class="shadow-24" style="width: 300px; z-index: 3 !important;">
-                <q-list dense dark separator style="max-width: 318px">
+                <q-list dense dark separator>
                   <q-item
-                    v-for="c in codes.filter(c => hasChanges(c.prop))" :key="c.prop"
+                    v-for="c in codeChanges" :key="c.prop"
                     clickable v-ripple
                     :class="{
                       'bg-blue-grey-10 text-white': selectedFile === c.prop
@@ -118,13 +142,13 @@
         </q-toolbar>
       </q-header>
 
-      <q-footer class="bg-dark text-white shadow-up-24">
+      <!-- <q-footer class="bg-dark text-white shadow-up-24">
         <q-toolbar>
           <q-toolbar-title>
           </q-toolbar-title>
           <q-btn disabled color="primary" @click="save" icon="save" label="Checkout"/>
         </q-toolbar>
-      </q-footer>
+      </q-footer> -->
     </q-layout>
   </q-dialog>
 </template>
@@ -132,7 +156,7 @@
 <script setup>
 /* eslint-disable no-new-func */
 import { useDialogPluginComponent } from 'quasar'
-import { onBeforeMount, getCurrentInstance, reactive, ref, onMounted, nextTick, onBeforeUnmount, watch } from 'vue'
+import { computed, onBeforeMount, getCurrentInstance, reactive, ref, onMounted, nextTick, onBeforeUnmount, watch } from 'vue'
 
 const { $likhaAPI, $monaco, $qs } = getCurrentInstance().appContext.config.globalProperties
 
@@ -232,17 +256,23 @@ watch(selectedFile, val => {
 function changeType (file) {
   const version = versions.value.filter(v => v.id === selectedVersion.value)[0]
 
-  const currentCode = props.codes.filter(c => c.prop === file)[0]
+  const currentCode = props.codes.filter(c => c.prop === file)[0]?.value
   const prevCode = JSON.parse(version.codes)[file]
+
+  console.log('diff', file, prevCode, currentCode)
 
   if (!prevCode.length) {
     return 'new'
-  } else if (currentCode.length === 0 && prevCode.length) {
+  } else if (prevCode.length && (currentCode.length === 0)) {
     return 'deleted'
   }
 
   return 'edited'
 }
+
+const codeChanges = computed(() => {
+  return props.codes.filter(c => hasChanges(c.prop))
+})
 
 function hasChanges (file) {
   const version = versions.value.filter(v => v.id === selectedVersion.value)[0]
@@ -260,9 +290,9 @@ function hasChanges (file) {
 }
 
 onBeforeUnmount(() => {
-  diffEditor.dispose()
   leftModel.dispose()
   rightModel.dispose()
+  diffEditor.dispose()
 })
 
 onBeforeMount(async () => {
