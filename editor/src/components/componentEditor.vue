@@ -129,14 +129,45 @@ export default defineComponent({
           codes: [...this.code1, ...this.code2, ...this.code3]
           // ...more..props...
         }
-      }).onOk((data) => {
-        this.env = '/staging-env'
+      }).onOk((version) => {
+        this.env = '/dev-env'
         this.$q.notify({
           position: 'top-right',
           color: 'positive',
           icon: 'verified',
-          message: 'Deployed to Staging'
+          message: `Checked out: ${version.summary}`
         })
+
+        setTimeout(() => {
+          this.code1 = []
+          this.code2 = []
+          this.code3 = []
+
+          const getLangByProp = (key) => {
+            switch (key) {
+              case 'template':
+                return 'html'
+              case 'style':
+                return 'css'
+              default:
+                return 'javascript'
+            }
+          }
+
+          const comp = JSON.parse(version.codes)
+
+          const getByProps = (keys) => keys.map(key => ({
+            prop: key,
+            value: comp[key] || '',
+            language: getLangByProp(key)
+          }))
+
+          this.code1 = getByProps(['template', 'data'])
+          // console.log('this.code1', this.code1)
+          this.code2 = getByProps(['methods', 'computed', 'lifeCycleEvents'])
+          // console.log('this.code2', this.code2)
+          this.code3 = getByProps(['props', 'emits', 'style'])
+        }, 500)
       })
     },
     async publish () {

@@ -27,6 +27,8 @@
                   :class="{
                     'bg-blue-grey-10': selectedVersion === v.id
                   }"
+                  @mouseover="hovering = v.id"
+                  @mouseleave="hovering = null"
                 >
                   <q-item-section>
                     <q-item-label>{{ v.summary }}</q-item-label>
@@ -41,6 +43,14 @@
                         TB • {{ v.createdAt }}
                       </span>
                     </q-item-label>
+                  </q-item-section>
+                  <q-item-section avatar>
+                    <q-btn
+                      @click="checkout(v)"
+                      v-show="codeChanges.length && selectedVersion === v.id && hovering === v.id"
+                      size="sm" round dense icon="get_app"
+                      class="bg-blue-grey-10"
+                    />
                   </q-item-section>
                 </q-item>
               </q-list>
@@ -174,6 +184,8 @@ const selectedVersion = ref('')
 
 const versions = ref([])
 
+const hovering = ref(null)
+
 let diffEditor, leftModel, rightModel
 
 defineEmits([
@@ -253,13 +265,32 @@ watch(selectedFile, val => {
   }
 })
 
+function checkout (version) {
+  console.log('version', JSON.parse(version.codes))
+
+  // const version = {
+  //   component: props.component.id,
+  //   summary,
+  //   description,
+  //   codes: JSON.stringify(versionCode)
+  // }
+
+  // await $likhaAPI.post('/versions', {
+  //   data: version
+  // })
+
+  // console.log(props.codes, dataCode, version)
+
+  onDialogOK(version)
+}
+
 function changeType (file) {
   const version = versions.value.filter(v => v.id === selectedVersion.value)[0]
 
   const currentCode = props.codes.filter(c => c.prop === file)[0]?.value
   const prevCode = JSON.parse(version.codes)[file]
 
-  console.log('diff', file, prevCode, currentCode)
+  // console.log('diff', file, prevCode, currentCode)
 
   if (!prevCode.length) {
     return 'new'

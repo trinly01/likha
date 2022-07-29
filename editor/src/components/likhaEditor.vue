@@ -93,6 +93,24 @@ export default defineComponent({
       monacoStateModels: {}
     }
   },
+  watch: {
+    modelValue (newVal, oldVal) {
+      const arrChanges = []
+      for (const code of newVal) {
+        // this.codeHasChanges = this['monacoEditor-' + code.prop].model.getValue() !== code.value
+        const model = this['monacoEditor-' + code.prop].model
+        model.pushEditOperations(
+          [],
+          [{ range: model.getFullModelRange(), text: code.value }],
+          () => null
+        )
+      }
+      for (const code of oldVal) {
+        arrChanges.push(this['monacoEditor-' + code.prop].model.getValue() !== code.value)
+      }
+      this.codeHasChanges = arrChanges.includes(true)
+    }
+  },
   methods: {
     minimize () {
       // console.log('parent change size', this.parent)
