@@ -1,51 +1,4 @@
 <template>
-  <q-dialog v-model="showPageTemplate" full-width>
-    <q-layout view="Lhh lpR fff" container class="bg-white">
-
-      <!-- <q-drawer bordered :width="200" :breakpoint="600" class="bg-grey-3 q-pa-sm">
-        <div v-for="n in 50" :key="n">Drawer {{ n }} / 50</div>
-      </q-drawer>
-
-      <q-drawer side="right" bordered :width="200" :breakpoint="300" class="bg-grey-3 q-pa-sm">
-        <div v-for="n in 50" :key="n">Drawer {{ n }} / 50</div>
-      </q-drawer> -->
-
-      <q-page-container>
-        <q-page class="bg-dark row" style="overflow: hidden; max-height: calc(100vh - 150px) !important;">
-          <div class="col">
-            <div ref="editor" class="fit"></div>
-          </div>
-        </q-page>
-      </q-page-container>
-
-      <q-header class="bg-secondary shadow-15">
-        <q-toolbar>
-          <q-btn flat round dense icon="dashboard" />
-          <q-toolbar-title>
-            Page Layout
-            <q-btn color="info" flat dense round icon="help_outline" @click="openBuilder"/>
-          </q-toolbar-title>
-          <q-space />
-          <!-- <q-btn flat round dense icon="menu" /> -->
-          <q-btn flat v-close-popup round dense icon="close" />
-        </q-toolbar>
-      </q-header>
-
-      <q-footer class="bg-dark text-white shadow-up-10">
-        <q-toolbar>
-          <!-- <q-toolbar-title>Footer</q-toolbar-title> -->
-          <div class="q-gutter-md">
-            <q-chip color="green" text-color="white" label="<lk-page-components />" />
-            <q-chip color="purple" text-color="white" label="<lk-page-[ left / right ]-components />" />
-            <q-chip color="cyan" text-color="white" label="<lk-page-[ header / footer ]-components />" />
-          </div>
-          <q-space />
-          <q-btn :disabled="!templateHasChanges" color="secondary" icon="save" label="save" @click="save" />
-        </q-toolbar>
-      </q-footer>
-    </q-layout>
-  </q-dialog>
-
   <q-layout view="hHr LpR lfr">
     <q-header elevated class="bg-dark text-white" height-hint="98">
       <q-toolbar class="shadow-6">
@@ -76,6 +29,7 @@
         </q-toolbar-title>
 
         <!-- <q-btn dense flat round icon="menu" @click="toggleRightDrawer" /> -->
+        <q-btn dense icon="preview" label="preview" @click="preview" />
         <q-btn :disabled="!hasChanges" dense icon="save" label="save" @click="save" />
       </q-toolbar>
       <div class="row">
@@ -309,6 +263,45 @@
     </q-drawer>
 
   </q-layout>
+
+  <q-dialog v-model="showPageTemplate" full-width>
+    <q-layout view="Lhh lpR fff" container class="bg-white">
+      <q-page-container>
+        <q-page class="bg-dark row" style="overflow: hidden; max-height: calc(100vh - 150px) !important;">
+          <div class="col">
+            <div ref="editor" class="fit"></div>
+          </div>
+        </q-page>
+      </q-page-container>
+
+      <q-header class="bg-secondary shadow-15">
+        <q-toolbar>
+          <q-btn flat round dense icon="dashboard" />
+          <q-toolbar-title>
+            Page Layout
+            <q-btn color="info" flat dense round icon="help_outline" @click="openBuilder"/>
+          </q-toolbar-title>
+          <q-space />
+          <!-- <q-btn flat round dense icon="menu" /> -->
+          <q-btn flat v-close-popup round dense icon="close" />
+        </q-toolbar>
+      </q-header>
+
+      <q-footer class="bg-dark text-white shadow-up-10">
+        <q-toolbar>
+          <!-- <q-toolbar-title>Footer</q-toolbar-title> -->
+          <div class="q-gutter-md">
+            <q-chip color="green" text-color="white" label="<lk-page-components />" />
+            <q-chip color="purple" text-color="white" label="<lk-page-[ left / right ]-components />" />
+            <q-chip color="cyan" text-color="white" label="<lk-page-[ header / footer ]-components />" />
+          </div>
+          <q-space />
+          <q-btn :disabled="!templateHasChanges" color="secondary" icon="save" label="save" @click="save" />
+        </q-toolbar>
+      </q-footer>
+    </q-layout>
+  </q-dialog>
+
 </template>
 
 <script>
@@ -345,6 +338,9 @@ export default {
     }
   },
   methods: {
+    preview () {
+      window.open(this.$previewHost + this.env + this.page.path, '_blank').focus()
+    },
     openBuilder () {
       // https://quasar.dev/layout-builder
       window.open('https://quasar.dev/layout-builder', '_blank').focus()
@@ -632,6 +628,13 @@ export default {
       this.page.template = this.editor?.model.getValue() || this.page.template
 
       this.showPageTemplate = false
+
+      this.$q.notify({
+        position: 'top-right',
+        color: 'positive',
+        icon: 'verified',
+        message: 'Page Layout Saved!'
+      })
     }
   },
   data () {
