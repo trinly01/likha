@@ -449,7 +449,10 @@ export default {
     },
     async openTemplateEditor () {
       this.showPageTemplate = true
-      if (this.editor) this.editor.dispose()
+      if (this.editor) {
+        this.editor.model.dispose()
+        this.editor.dispose()
+      }
 
       setTimeout(() => {
         this.editor = this.$monaco.editor.create(this.$refs.editor, {
@@ -465,7 +468,7 @@ export default {
           // console.log('pressing', keyCode)
           if ((keyCode === 49) && (metaKey || ctrlKey)) {
             event.preventDefault()
-            if (this.codeHasChanges) this.save()
+            if (this.templateHasChanges) this.save()
           }
         })
 
@@ -584,7 +587,7 @@ export default {
       }
 
       e.preventDefault()
-      this.save()
+      if (this.codeHasChanges && this.templateHasChanges) this.save()
     },
     async save () {
       const headerComponents = this.$JSON5.stringify(this.page.headerComponents, {
@@ -627,7 +630,8 @@ export default {
 
       this.page.template = this.editor?.model.getValue() || this.page.template
 
-      this.showPageTemplate = false
+      // this.showPageTemplate = false
+      this.templateHasChanges = false
 
       this.$q.notify({
         position: 'top-right',
